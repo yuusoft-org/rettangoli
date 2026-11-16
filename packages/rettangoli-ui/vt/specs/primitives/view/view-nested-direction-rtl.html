@@ -1,0 +1,76 @@
+---
+title: View - Nested Direction - RTL
+dir: rtl
+description: Verifies that a `dir` attribute on a subtree overrides the document direction, which is the escape hatch for content that must keep its physical sides.
+specs:
+  - 'The document is `dir="rtl"`, so the outer row flows right to left and `ml` lands on the right.'
+  - 'A `dir="ltr"` subtree flows left to right and `ml` lands on the left.'
+  - 'A `dir="rtl"` subtree nested inside the LTR subtree mirrors again.'
+steps:
+  - action: assert
+    type: js
+    fn: nestedDirectionVt.measure
+    value:
+      outer: { firstChild: right, ml: right, pl: right }
+      ltr: { firstChild: left, ml: left, pl: left }
+      inner: { firstChild: right, ml: right, pl: right }
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f">
+  <rtgl-text>Document (rtl)</rtgl-text>
+  <rtgl-view id="outer" d="h" g="md" bw="xs" bc="bo" p="md" w="f">
+    <rtgl-view data-role="first" bgc="ac" wh="50" ah="c" av="c"><rtgl-text c="ac-fg">1</rtgl-text></rtgl-view>
+    <rtgl-view bgc="mu" wh="50" ah="c" av="c"><rtgl-text>2</rtgl-text></rtgl-view>
+    <rtgl-view data-role="c-ml" bgc="mu"><rtgl-view data-role="b-ml" bgc="ac" wh="50" ml="xl"></rtgl-view></rtgl-view>
+    <rtgl-view data-role="c-pl" bgc="mu" pl="xl"><rtgl-view data-role="b-pl" bgc="ac" wh="50"></rtgl-view></rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view id="ltr" dir="ltr" d="v" g="md" bw="xs" bc="bo" p="md" w="f">
+    <rtgl-text>Subtree dir="ltr"</rtgl-text>
+    <rtgl-view data-row d="h" g="md" w="f">
+      <rtgl-view data-role="first" bgc="ac" wh="50" ah="c" av="c"><rtgl-text c="ac-fg">1</rtgl-text></rtgl-view>
+      <rtgl-view bgc="mu" wh="50" ah="c" av="c"><rtgl-text>2</rtgl-text></rtgl-view>
+      <rtgl-view data-role="c-ml" bgc="mu"><rtgl-view data-role="b-ml" bgc="ac" wh="50" ml="xl"></rtgl-view></rtgl-view>
+      <rtgl-view data-role="c-pl" bgc="mu" pl="xl"><rtgl-view data-role="b-pl" bgc="ac" wh="50"></rtgl-view></rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view id="inner" dir="rtl" d="v" g="md" bw="xs" bc="bo" p="md" w="f">
+      <rtgl-text>Nested subtree dir="rtl"</rtgl-text>
+      <rtgl-view data-row d="h" g="md" w="f">
+        <rtgl-view data-role="first" bgc="ac" wh="50" ah="c" av="c"><rtgl-text c="ac-fg">1</rtgl-text></rtgl-view>
+        <rtgl-view bgc="mu" wh="50" ah="c" av="c"><rtgl-text>2</rtgl-text></rtgl-view>
+        <rtgl-view data-role="c-ml" bgc="mu"><rtgl-view data-role="b-ml" bgc="ac" wh="50" ml="xl"></rtgl-view></rtgl-view>
+        <rtgl-view data-role="c-pl" bgc="mu" pl="xl"><rtgl-view data-role="b-pl" bgc="ac" wh="50"></rtgl-view></rtgl-view>
+      </rtgl-view>
+    </rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  const measureScope = (scopeId, rowSelector) => {
+    const scope = document.getElementById(scopeId);
+    const row = rowSelector ? scope.querySelector(rowSelector) : scope;
+    const find = (role) => row.querySelector(`:scope > [data-role="${role}"], :scope > * > [data-role="${role}"]`);
+    const rowRect = row.getBoundingClientRect();
+    const first = find("first").getBoundingClientRect();
+    const gapSide = (name) => {
+      const outer = find(`c-${name}`).getBoundingClientRect();
+      const inner = find(`b-${name}`).getBoundingClientRect();
+      const left = inner.left - outer.left > 1;
+      const right = outer.right - inner.right > 1;
+      return left && right ? "both" : left ? "left" : right ? "right" : "none";
+    };
+    return {
+      firstChild: first.left - rowRect.left < rowRect.right - first.right ? "left" : "right",
+      ml: gapSide("ml"),
+      pl: gapSide("pl"),
+    };
+  };
+
+  window.nestedDirectionVt = {
+    measure: () => ({
+      outer: measureScope("outer"),
+      ltr: measureScope("ltr", ":scope > [data-row]"),
+      inner: measureScope("inner", ":scope > [data-row]"),
+    }),
+  };
+</script>

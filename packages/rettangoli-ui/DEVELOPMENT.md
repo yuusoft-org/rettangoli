@@ -537,6 +537,14 @@ Accept intended baselines:
 bun run vt:accept
 ```
 
+Right-to-left specs:
+
+- Add `dir: rtl` to a spec's frontmatter to render its page with `dir="rtl"` on `<html>`. `vt/templates/default.html` reads the key; specs without it are unchanged.
+- Name the file with an `-rtl` suffix and keep it in the component's folder, next to the left-to-right spec it mirrors (`basic.html` and `basic-rtl.html`).
+- `l` and `r` in attributes (`ml`, `pr`, `bwl`, `edge="r"`, `place="rs"`) mean the start and end of the reading direction. Specs that pin this down assert on measured geometry and name the physical side they expect, for example `primitives/view/view-logical-sides-rtl.html` and `components/tooltip/placements-rtl.html`.
+- Cover a `dir` attribute on a subtree when a component must keep its physical sides (`primitives/view/view-nested-direction-rtl.html`).
+- Arabic and Hebrew sample text renders with the FreeSans and FreeSerif fonts in the VT Docker image, so capture those specs in Docker, not on the host.
+
 Temporary VT skips (as of 2026-02-11):
 
 - `vt/specs/components/select/basic.html`

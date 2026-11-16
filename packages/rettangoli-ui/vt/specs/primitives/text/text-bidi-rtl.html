@@ -1,0 +1,39 @@
+---
+title: Text - Bidirectional Content - RTL
+dir: rtl
+description: Verifies Arabic and Hebrew text rendering, start and end alignment, ellipsis and mixed-direction content under `dir="rtl"`.
+specs:
+  - Arabic and Hebrew text is shaped and reads right to left.
+  - '`ta="s"` aligns to the right and `ta="e"` aligns to the left.'
+  - Ellipsis truncates at the left end of an RTL line.
+  - Latin words and numbers keep their own left-to-right order inside an RTL sentence.
+  - 'A `dir="ltr"` subtree keeps English text left aligned.'
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f">
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="h3">مرحبا بالعالم</rtgl-text>
+    <rtgl-text s="h3">שלום עולם</rtgl-text>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f" bw="xs" bc="bo" p="md">
+    <rtgl-text ta="s" w="f">محاذاة إلى البداية (ta=s)</rtgl-text>
+    <rtgl-text ta="c" w="f">محاذاة إلى الوسط (ta=c)</rtgl-text>
+    <rtgl-text ta="e" w="f">محاذاة إلى النهاية (ta=e)</rtgl-text>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="320" bw="xs" bc="bo" p="md">
+    <rtgl-text ellipsis w="f">هذا نص طويل جدا يجب أن يتم اقتطاعه عندما لا تتوفر مساحة كافية لعرضه كاملا</rtgl-text>
+    <rtgl-text ellipsis w="f">זהו טקסט ארוך מאוד שצריך להיחתך כאשר אין מספיק מקום להציג את כולו</rtgl-text>
+  </rtgl-view>
+
+  <rtgl-view g="sm" w="f" bw="xs" bc="bo" p="md">
+    <rtgl-text>تم تحديث Rettangoli إلى الإصدار 2.0.0 في 12 نوفمبر 2026</rtgl-text>
+    <rtgl-text>הגרסה 2.0.0 של Rettangoli שוחררה (12 בנובמבר 2026)</rtgl-text>
+    <rtgl-text>السعر: 1,250.50 USD</rtgl-text>
+  </rtgl-view>
+
+  <rtgl-view dir="ltr" g="sm" w="f" bw="xs" bc="bo" p="md">
+    <rtgl-text ta="s" w="f">English text in a dir="ltr" subtree (ta=s)</rtgl-text>
+    <rtgl-text ta="e" w="f">English text in a dir="ltr" subtree (ta=e)</rtgl-text>
+  </rtgl-view>
+</rtgl-view>

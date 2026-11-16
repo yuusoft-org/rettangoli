@@ -1,0 +1,110 @@
+---
+title: View - Align - Single Item - RTL
+dir: rtl
+description: Verifies `ah` and `av` alignment behavior for a single child across container directions.
+specs:
+  - 'Same content as `view-align-01.html`, rendered with `dir="rtl"` on the document.'
+  - Validates horizontal containers with start, center, and end alignment.
+  - Validates vertical/default containers with start, center, and end alignment.
+---
+
+<rtgl-view g="md" p="lg" wh="f" wrap>
+
+    <rtgl-view d="h" g="md">
+        <rtgl-view bgc="mu" wh="40">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view bgc="mu" wh="40" ah="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view bgc="mu" wh="40" ah="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+
+        <rtgl-view d="v" bgc="mu" wh="40">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="v" bgc="mu" wh="40" ah="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="v" bgc="mu" wh="40" ah="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+
+        <rtgl-view d="h" bgc="mu" wh="40">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="h" bgc="mu" wh="40" ah="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="h" bgc="mu" wh="40" ah="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view d="h" g="md">
+        <rtgl-view bgc="mu" wh="40" av="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view bgc="mu" wh="40" ah="c" av="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view bgc="mu" wh="40" ah="e" av="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+
+        <rtgl-view d="v" bgc="mu" wh="40" av="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="v" bgc="mu" wh="40" ah="c" av="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="v" bgc="mu" wh="40" ah="e" av="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+
+        <rtgl-view d="h" bgc="mu" wh="40" av="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="h" bgc="mu" wh="40" ah="c" av="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="h" bgc="mu" wh="40" ah="e" av="c">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+    </rtgl-view>
+
+    <rtgl-view d="h" g="md">
+        <rtgl-view bgc="mu" wh="40" av="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view bgc="mu" wh="40" ah="c" av="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view bgc="mu" wh="40" ah="e" av="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+
+        <rtgl-view d="v" bgc="mu" wh="40" av="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="v" bgc="mu" wh="40" ah="c" av="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+
+        <rtgl-view d="v" bgc="mu" wh="40" ah="e" av="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+
+        <rtgl-view d="h" bgc="mu" wh="40" av="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="h" bgc="mu" wh="40" ah="c" av="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+        <rtgl-view d="h" bgc="mu" wh="40" ah="e" av="e">
+            <rtgl-view bgc="ac" wh="12"></rtgl-view>
+        </rtgl-view>
+    </rtgl-view>
+
+</rtgl-view>

@@ -1,0 +1,144 @@
+---
+title: "Mixed Inputs With Defaults - RTL"
+dir: rtl
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+specs:
+  - 'Same content as `mixed-inputs-with-defaults.html`, rendered with `dir="rtl"` on the document.'
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+
+  form.defaultValues = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    favoriteColor: '#2ecc71',
+    age: 25,
+    bio: 'Passionate developer with a love for creating beautiful user interfaces and solving complex problems.',
+    experience: 5,
+    salary: 8000,
+    role: 'designer',
+    volume: 75,
+    isActive: true,
+    anchor: '1,1',
+    avatar: '/public/sample1.jpg'
+  }
+
+  form.form = {
+    title: 'User Profile',
+    description: 'Complete your profile information with default values',
+    fields: [{
+      name: 'avatar',
+      type: 'image',
+      label: 'Avatar',
+      description: 'Your profile picture',
+      width: 80,
+      height: 80,
+    }, {
+      name: 'name',
+      type: 'input-text',
+      label: 'Full Name',
+      description: 'Enter your full name',
+      placeholder: 'John Doe',
+    }, {
+      name: 'email',
+      type: 'input-text',
+      label: 'Email',
+      description: 'Enter your email address',
+      placeholder: 'user@example.com',
+    }, {
+      name: 'favoriteColor',
+      type: 'color-picker',
+      label: 'Favorite Color',
+      description: 'Pick your favorite color',
+    }, {
+      name: 'age',
+      type: 'input-number',
+      label: 'Age',
+      description: 'Enter your age',
+      min: 0,
+      max: 150,
+    }, {
+      name: 'bio',
+      type: 'input-textarea',
+      label: 'Bio',
+      description: 'Tell us about yourself',
+      placeholder: 'Enter your bio here...',
+    }, {
+      name: 'experience',
+      type: 'slider',
+      label: 'Years of Experience',
+      description: 'How many years of work experience?',
+      min: 0,
+      max: 20,
+      step: 1,
+    }, {
+      name: 'salary',
+      type: 'slider-with-input',
+      label: 'Ideal Salary',
+      description: 'How much salary do you want every month?',
+      min: 3000,
+      max: 50000,
+      step: 1000,
+    }, {
+      name: 'role',
+      type: 'select',
+      label: 'Role',
+      description: 'Select your role',
+      placeholder: 'Choose a role',
+      options: [
+        { label: 'Developer', value: 'developer' },
+        { label: 'Designer', value: 'designer' },
+        { label: 'Manager', value: 'manager' }
+      ]
+    }, {
+      name: 'volume',
+      type: 'slider',
+      label: 'Volume',
+      description: 'Adjust the volume level',
+      min: 0,
+      max: 100,
+      step: 1,
+    }, {
+      name: 'anchor',
+      type: 'select',
+      label: 'Anchor',
+      description: 'This is an anchor field',
+      placeholder: 'Click here',
+      required: false,
+      options: [{
+        label: 'Top Left', value: '0,0',
+      }, {
+        label: 'Top Right', value: '1,0',
+      }, {
+        label: 'Bottom Left', value: '0,1',
+      }, {
+        label: 'Bottom Right', value: '1,1',
+      }],
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Save Profile',
+      }],
+    }
+  }
+
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

@@ -1,0 +1,22 @@
+---
+title: "Breadcrumb - Custom Separator - RTL"
+dir: rtl
+specs:
+  - 'Same content as `custom-separator.html`, rendered with `dir="rtl"` on the document.'
+---
+<rtgl-view g="lg" h="100vh" w="f" wrap>
+  <rtgl-breadcrumb id="breadcrumb">
+  </rtgl-breadcrumb>
+</rtgl-view>
+
+<script>
+  const breadcrumb = document.getElementById('breadcrumb');
+  breadcrumb.items = [
+    { label: "Home", id: "breadcrumb-home", href: "/" },
+    { label: "Category", id: "breadcrumb-category", path: "/category" },
+    { label: "Subcategory", id: "breadcrumb-subcategory", path: "/category/subcategory" },
+    { label: "Current Page", current: true }
+  ];
+  breadcrumb.sep = "threeDots";
+  breadcrumb.render();
+</script>

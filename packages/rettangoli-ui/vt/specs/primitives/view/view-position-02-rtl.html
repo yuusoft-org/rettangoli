@@ -1,0 +1,15 @@
+---
+title: View - Position - Fixed Left Right - RTL
+dir: rtl
+description: Verifies fixed positioning using `pos="fix"` with left and right edge shorthands.
+specs:
+  - 'Same content as `view-position-02.html`, rendered with `dir="rtl"` on the document.'
+  - Edge value `l` pins element to left with full height.
+  - Edge value `r` pins element to right with full height.
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f">
+    <rtgl-view bgc="mu" pos="fix" edge="l" w="100">
+    </rtgl-view>
+    <rtgl-view bgc="mu" pos="fix" edge="r" w="100">
+    </rtgl-view>
+</rtgl-view>

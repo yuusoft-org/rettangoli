@@ -1,0 +1,25 @@
+---
+title: Input Number - Basic - Default Field - RTL
+dir: rtl
+description: Verifies baseline rendering and event wiring for a default number input.
+specs:
+  - 'Same content as `input-number-basic-01.html`, rendered with `dir="rtl"` on the document.'
+  - Default number input renders with baseline styles.
+  - Input emits value-input events during typing.
+  - Empty and numeric states remain visually stable.
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-text>Basic number input:</rtgl-text>
+  <rtgl-input-number id="basic-input"></rtgl-input-number>
+</rtgl-view>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('basic-input');
+    if (input) {
+      input.addEventListener('value-input', (e) => {
+        console.log('Basic input value changed:', { value: e.detail.value });
+      });
+    }
+  });
+</script>

@@ -1,0 +1,28 @@
+---
+title: "Navbar - With logo and path - RTL"
+dir: rtl
+specs:
+  - 'Same content as `0003.html`, rendered with `dir="rtl"` on the document.'
+---
+<rtgl-view g="lg" h="100vh" w="f" wrap>
+  <rtgl-navbar id="navbar">
+  </rtgl-navbar>
+</rtgl-view>
+
+<script>
+  const navbar = document.getElementById('navbar');
+  navbar.start = {
+    label: "Navbar",
+    path: "/",
+    image: {
+      src: "/public/sample1.jpg",
+      width: 32,
+      height: 32,
+      alt: "Navbar",
+    },
+  }
+  navbar.addEventListener('start-click', (e) => {
+    console.log(e.detail);
+  });
+  navbar.render();
+</script>

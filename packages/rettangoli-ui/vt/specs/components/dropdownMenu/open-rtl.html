@@ -1,0 +1,167 @@
+---
+title: "Open - RTL"
+dir: rtl
+specs:
+  - 'Same content as `open.html`, rendered with `dir="rtl"` on the document.'
+---
+<rtgl-view g="lg" h="100vh" w="100vw" wrap>
+  <rtgl-dropdown-menu id="dropdown-menu-small"></rtgl-dropdown-menu>
+  <rtgl-dropdown-menu id="dropdown-menu-large"></rtgl-dropdown-menu>
+</rtgl-view>
+
+<script>
+  // Small dropdown with few items
+  const dropdownMenuSmall = document.getElementById('dropdown-menu-small');
+  dropdownMenuSmall.setAttribute('w', '260');
+  dropdownMenuSmall.setAttribute('h', '220');
+  dropdownMenuSmall.items = [
+    {
+      label: 'File',
+      type: 'section',
+    },
+    {
+      id: 'new',
+      label: 'New',
+    },
+    {
+      id: 'open',
+      label: 'Open',
+    },
+    {
+      id: 'save',
+      label: 'Save',
+      disabled: true,
+    },
+    {
+      type: 'separator',
+    },
+    {
+      label: 'Exit',
+      type: 'item',
+    }
+  ];
+
+  dropdownMenuSmall.setAttribute('open', '');
+  dropdownMenuSmall.setAttribute('x', '20');
+  dropdownMenuSmall.setAttribute('y', '20');
+
+  // Large dropdown with 20+ items
+  const dropdownMenuLarge = document.getElementById('dropdown-menu-large');
+  dropdownMenuLarge.setAttribute('w', '320');
+  dropdownMenuLarge.setAttribute('h', '320');
+  dropdownMenuLarge.items = [
+    {
+      label: 'File Operations',
+      type: 'section',
+    },
+    {
+      id: 'new-file',
+      label: 'New File',
+    },
+    {
+      id: 'open-file',
+      label: 'Open File',
+    },
+    {
+      id: 'save',
+      label: 'Save',
+    },
+    {
+      id: 'save-as',
+      label: 'Save As',
+    },
+    {
+      id: 'close',
+      label: 'Close',
+    },
+    {
+      type: 'separator',
+    },
+    {
+      label: 'Edit Operations',
+      type: 'section',
+    },
+    {
+      id: 'undo',
+      label: 'Undo',
+    },
+    {
+      id: 'redo',
+      label: 'Redo',
+    },
+    {
+      id: 'cut',
+      label: 'Cut',
+    },
+    {
+      id: 'copy',
+      label: 'Copy',
+    },
+    {
+      id: 'paste',
+      label: 'Paste',
+    },
+    {
+      id: 'select-all',
+      label: 'Select All',
+    },
+    {
+      id: 'find',
+      label: 'Find',
+    },
+    {
+      id: 'replace',
+      label: 'Replace',
+    },
+    {
+      type: 'separator',
+    },
+    {
+      label: 'View Options',
+      type: 'section',
+    },
+    {
+      id: 'zoom-in',
+      label: 'Zoom In',
+    },
+    {
+      id: 'zoom-out',
+      label: 'Zoom Out',
+    },
+    {
+      id: 'full-screen',
+      label: 'Full Screen',
+    },
+    {
+      type: 'separator',
+    },
+    {
+      label: 'Recent Files',
+      type: 'section',
+    },
+    {
+      id: 'doc-1',
+      label: 'document1.txt',
+    },
+    {
+      id: 'doc-2',
+      label: 'presentation.pptx',
+    },
+    {
+      id: 'doc-3',
+      label: 'spreadsheet.xlsx',
+    },
+    {
+      id: 'doc-4',
+      label: 'image.jpg',
+    },
+    {
+      id: 'doc-5',
+      label: 'code.js',
+    }
+  ];
+
+  dropdownMenuLarge.setAttribute('open', '');
+  dropdownMenuLarge.setAttribute('x', '400');
+  dropdownMenuLarge.setAttribute('y', '20');
+</script>

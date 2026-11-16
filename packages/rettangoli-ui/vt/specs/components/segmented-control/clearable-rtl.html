@@ -1,0 +1,47 @@
+---
+title: Segmented Control - Clearable Behavior - RTL
+dir: rtl
+description: Clicks the active segment of two controls whose `selectedValue` is set to `center` and never updated. A defined `selectedValue` wins, so both controls still show `center` selected after the click, with or without `no-clear`.
+specs:
+  - 'Same content as `clearable.html`, rendered with `dir="rtl"` on the document.'
+  - Both controls set a defined `selectedValue` and the page does not update it after the click.
+  - Both controls still show `center` selected after the click.
+  - A control with no defined `selectedValue` clears a picked segment when it is clicked again; this page sets one.
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: vt:toggle-segmented-controls
+  - action: wait
+    ms: 180
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" w="520">
+  <rtgl-segmented-control id="clearable" w="f"></rtgl-segmented-control>
+  <rtgl-segmented-control id="sticky" w="f" no-clear></rtgl-segmented-control>
+</rtgl-view>
+
+<script>
+  const options = [
+    { value: 'left', label: 'Left', testId: 'left-option' },
+    { value: 'center', label: 'Center', testId: 'center-option' },
+    { value: 'right', label: 'Right', testId: 'right-option' },
+  ];
+
+  const clearable = document.getElementById('clearable');
+  clearable.selectedValue = 'center';
+  clearable.options = options;
+  clearable.render();
+
+  const sticky = document.getElementById('sticky');
+  sticky.selectedValue = 'center';
+  sticky.options = options;
+  sticky.render();
+
+  window.addEventListener('vt:toggle-segmented-controls', () => {
+    const clearableSelected = clearable.shadowRoot?.querySelector('#option1');
+    const stickySelected = sticky.shadowRoot?.querySelector('#option1');
+
+    clearableSelected?.click();
+    stickySelected?.click();
+  });
+</script>

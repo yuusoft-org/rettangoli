@@ -1,0 +1,38 @@
+---
+title: Text - Alignment - Start Center End Justify - RTL
+dir: rtl
+description: Verifies text alignment options for paragraph content inside fixed-width containers.
+specs:
+  - 'Same content as `text-text-align-01.html`, rendered with `dir="rtl"` on the document.'
+  - Start alignment renders baseline left alignment.
+  - Center, end, and justify alignments render distinct paragraph layout.
+  - Alignment changes do not break container spacing.
+---
+
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-view bgc="mu" p="md" w="300">
+    <rtgl-text>
+      Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+    </rtgl-text>
+  </rtgl-view>
+  <rtgl-view bgc="mu" p="md" w="300">
+    <rtgl-text ta="s">
+      Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+    </rtgl-text>
+  </rtgl-view>
+  <rtgl-view bgc="mu" p="md" w="300">
+    <rtgl-text ta="c">
+      Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+    </rtgl-text>
+  </rtgl-view>
+  <rtgl-view bgc="mu" p="md" w="300">
+    <rtgl-text ta="j">
+      Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+    </rtgl-text>
+  </rtgl-view>
+  <rtgl-view bgc="mu" p="md" w="300">
+    <rtgl-text ta="e">
+      Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+    </rtgl-text>
+  </rtgl-view>
+</rtgl-view>

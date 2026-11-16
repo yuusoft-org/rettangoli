@@ -1,0 +1,43 @@
+---
+title: Input - Bidirectional Values
+description: Verifies that text fields take their direction from what the user typed, so right-to-left content reads correctly on a left-to-right page and the reverse.
+specs:
+  - The page is left to right.
+  - A Hebrew or Arabic value renders right to left and right aligned.
+  - A Latin value renders left to right.
+  - An empty field follows the page direction, so its placeholder is left aligned.
+  - Number inputs always render left to right.
+steps:
+  - action: assert
+    type: js
+    fn: inputBidiVt.measure
+    value:
+      inputHebrew: rtl
+      inputArabic: rtl
+      inputLatin: ltr
+      inputEmpty: ltr
+      textareaHebrew: rtl
+      textareaLatin: ltr
+      numberInput: ltr
+---
+<rtgl-view d="v" g="md" p="lg" w="420">
+  <rtgl-input id="inputHebrew" value="שלום עולם" w="f"></rtgl-input>
+  <rtgl-input id="inputArabic" value="مرحبا بالعالم" w="f"></rtgl-input>
+  <rtgl-input id="inputLatin" value="Hello world" w="f"></rtgl-input>
+  <rtgl-input id="inputEmpty" placeholder="Placeholder" w="f"></rtgl-input>
+  <rtgl-textarea id="textareaHebrew" value="שלום עולם" w="f"></rtgl-textarea>
+  <rtgl-textarea id="textareaLatin" value="Hello world" w="f"></rtgl-textarea>
+  <rtgl-input-number id="numberInput" value="-1250" w="f"></rtgl-input-number>
+</rtgl-view>
+
+<script>
+  window.inputBidiVt = {
+    measure: () => Object.fromEntries(
+      ["inputHebrew", "inputArabic", "inputLatin", "inputEmpty", "textareaHebrew", "textareaLatin", "numberInput"]
+        .map((id) => {
+          const control = document.getElementById(id).shadowRoot.querySelector("input, textarea");
+          return [id, getComputedStyle(control).direction];
+        }),
+    ),
+  };
+</script>

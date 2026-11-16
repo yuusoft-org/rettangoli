@@ -1,0 +1,66 @@
+---
+title: "Basic - RTL"
+dir: rtl
+specs:
+  - 'Same content as `basic.html`, rendered with `dir="rtl"` on the document.'
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+
+  form.defaultValues = {}
+
+  form.form = {
+    title: 'Form Title',
+    description: 'Form Description',
+    fields: [{
+      name: 'email',
+      type: 'input-text',
+      label: 'Email',
+      description: 'Enter your email',
+      required: true,
+    }, {
+      name: 'password',
+      type: 'input-text',
+      label: 'Password',
+      inputType: 'password',
+      description: 'Enter your password',
+      required: true,
+    }, {
+      name: 'age',
+      type: 'input-number',
+      label: 'Age',
+      description: 'Enter your age',
+      required: true,
+    }, {
+      name: 'comments',
+      type: 'input-textarea',
+      label: 'Comments',
+      description: 'Any additional comments?',
+      placeholder: 'Enter your comments here...',
+      required: false,
+      rows: 12,
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Submit',
+      }],
+    }
+  }
+
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+</script>

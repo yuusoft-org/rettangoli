@@ -1,0 +1,154 @@
+---
+title: Dialog - Form - Embedded Workflow - RTL
+dir: rtl
+description: Verifies form component rendering and action handling inside dialog content slot.
+specs:
+  - 'Same content as `with-form.html`, rendered with `dir="rtl"` on the document.'
+  - Dialog opens and mounts `rtgl-form` content lazily.
+  - Form schema renders mixed field types and action buttons.
+  - Action events close dialog for cancel and submit outcomes.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: open-dialog-form
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: attached
+    timeoutMs: 1500
+  - action: waitFor
+    selector: '#form'
+    state: attached
+    timeoutMs: 1500
+  - action: assert
+    type: exists
+    selector: '#form'
+  - action: assert
+    type: js
+    fn: withForm.getState
+    value:
+      fieldNames:
+        - name
+        - email
+        - favoriteColor
+        - experience
+      actionIds:
+        - cancel
+        - submit
+  - action: wait
+    ms: 350
+  - action: customEvent
+    name: vt:stabilize-form-dialog
+  - action: wait
+    ms: 100
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-button id="button" data-testid="open-dialog-form">Open Form Dialog</rtgl-button>
+  <rtgl-dialog id="dialog">
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
+  const form = document.createElement('rtgl-form');
+
+  form.setAttribute('id', 'form');
+  form.setAttribute('slot', 'content');
+
+  form.defaultValues = {
+    name: '',
+    email: '',
+    favoriteColor: '#3498db',
+    experience: 3
+  };
+
+  form.form = {
+    title: 'User Registration',
+    description: 'Please fill out your information',
+    fields: [{
+      name: 'name',
+      type: 'input-text',
+      label: 'Full Name',
+      description: 'Enter your full name',
+      placeholder: 'John Doe'
+    }, {
+      name: 'email',
+      type: 'input-text',
+      label: 'Email Address',
+      description: 'Enter your email address',
+      placeholder: 'john@example.com'
+    }, {
+      name: 'favoriteColor',
+      type: 'color-picker',
+      label: 'Favorite Color',
+      description: 'Pick your favorite color',
+      value: '#3498db'
+    }, {
+      name: 'experience',
+      type: 'slider',
+      label: 'Years of Experience',
+      description: 'How many years of experience do you have?',
+      min: 0,
+      max: 20,
+      step: 1,
+      value: 3
+    }],
+    actions: {
+      buttons: [{
+        id: 'cancel',
+        label: 'Cancel',
+      }, {
+        id: 'submit',
+        variant: 'pr',
+        label: 'Register',
+      }],
+    }
+  };
+
+  form.addEventListener('form-action', (e) => {
+    console.log('Form action:', e.detail);
+    if (e.detail.actionId === 'cancel') {
+      dialog.removeAttribute('open');
+    } else if (e.detail.actionId === 'submit') {
+      console.log('Form submitted with values:', e.detail.values);
+      dialog.removeAttribute('open');
+    }
+  });
+
+  window.withForm = {
+    getState() {
+      return {
+        fieldNames: [...form.shadowRoot.querySelectorAll('[data-field-name]')]
+          .map((field) => field.dataset.fieldName),
+        actionIds: [...form.shadowRoot.querySelectorAll('[data-action-id]')]
+          .map((button) => button.dataset.actionId),
+      };
+    },
+  };
+
+  button.addEventListener('click', () => {
+    if (!form.parentNode) {
+      dialog.appendChild(form);
+      form.render();
+    }
+
+    dialog.setAttribute('open', '');
+  });
+
+  // Listen for dialog close events (overlay click or ESC key)
+  dialog.addEventListener('close', () => {
+    dialog.removeAttribute('open');
+  });
+
+  window.addEventListener('vt:stabilize-form-dialog', () => {
+    window.dispatchEvent(new Event('resize'));
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        dialog.dialog.scrollTop = 0;
+      });
+    });
+  });
+</script>

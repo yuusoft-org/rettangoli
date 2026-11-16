@@ -1,0 +1,19 @@
+---
+title: SVG - Icon Set - Registry Rendering - RTL
+dir: rtl
+description: Verifies multiple registered icon names render successfully.
+specs:
+  - 'Same content as `svg-svg-01.html`, rendered with `dir="rtl"` on the document.'
+  - Known icon keys resolve to rendered svg output.
+  - Multiple icons can render together in one container.
+  - Uniform sizing remains consistent across icon variants.
+---
+<rtgl-view bgc="suc" g="lg" p="lg" wh="f" wrap>
+    <rtgl-svg svg="text" wh="24"></rtgl-svg>
+    <rtgl-svg svg="music" wh="24"></rtgl-svg>
+    <rtgl-svg svg="threeDots" wh="24"></rtgl-svg>
+    <rtgl-svg svg="play" wh="24"></rtgl-svg>
+    <rtgl-svg svg="plus" wh="24"></rtgl-svg>
+    <rtgl-svg svg="arrowLeft" wh="24"></rtgl-svg>
+    <rtgl-svg svg="arrowRight" wh="24"></rtgl-svg>
+</rtgl-view>
