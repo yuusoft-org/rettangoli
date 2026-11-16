@@ -1,0 +1,188 @@
+---
+title: "Required - Whitespace-only Text"
+description: A required text field that holds only whitespace fails validation; the value itself is kept as typed.
+specs:
+  - Spaces typed into a required input-text, textarea, or popover-input count as empty for `required`; a custom required message still applies.
+  - A select whose chosen option value is a space, and a text field that is not required, pass.
+  - The values keep their whitespace; nothing is trimmed.
+  - After the failed validation, typing text into Title clears its error.
+skipInitialScreenshot: true
+steps:
+  - action: select
+    testId: title-input
+    steps:
+      - action: focus
+      - action: keypress
+        key: Space
+      - action: keypress
+        key: Space
+      - action: keypress
+        key: Space
+  - action: select
+    testId: notes-input
+    steps:
+      - action: focus
+      - action: keypress
+        key: Space
+      - action: keypress
+        key: Space
+  - action: select
+    testId: submit-btn
+    steps:
+      - action: click
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: requiredWhitespaceVt.getState
+    value:
+      values:
+        title: "   "
+        notes: "  "
+        nickname: " "
+        separator: " "
+        comment: "  "
+      shown:
+        - This field is required
+        - Add a note
+        - This field is required
+      invalid:
+        - title
+        - notes
+        - nickname
+      lastAction:
+        actionId: submit
+        valid: false
+        errors:
+          title: This field is required
+          notes: Add a note
+          nickname: This field is required
+  - action: screenshot
+  - action: select
+    testId: title-input
+    steps:
+      - action: write
+        value: "  Launch plan "
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: requiredWhitespaceVt.getState
+    value:
+      values:
+        title: "  Launch plan "
+        notes: "  "
+        nickname: " "
+        separator: " "
+        comment: "  "
+      shown:
+        - Add a note
+        - This field is required
+      invalid:
+        - notes
+        - nickname
+      lastAction:
+        actionId: submit
+        valid: false
+        errors:
+          title: This field is required
+          notes: Add a note
+          nickname: This field is required
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '400');
+
+  form.defaultValues = {
+    nickname: ' ',
+    separator: ' ',
+    comment: '  ',
+  };
+
+  form.form = {
+    title: 'Required text',
+    description: 'Whitespace alone does not fill a required text field',
+    fields: [{
+      name: 'title',
+      type: 'input-text',
+      label: 'Title',
+      required: true,
+    }, {
+      name: 'notes',
+      type: 'input-textarea',
+      label: 'Notes',
+      rows: 2,
+      required: { message: 'Add a note' },
+    }, {
+      name: 'nickname',
+      type: 'popover-input',
+      label: 'Nickname',
+      required: true,
+    }, {
+      name: 'separator',
+      type: 'select',
+      label: 'Separator',
+      description: 'The chosen option has a space as its value',
+      required: true,
+      options: [
+        { label: 'Space', value: ' ' },
+        { label: 'Comma', value: ',' },
+      ],
+    }, {
+      name: 'comment',
+      type: 'input-text',
+      label: 'Comment',
+      description: 'Not required, holds two spaces',
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Validate',
+        validate: true,
+      }],
+    }
+  };
+
+  let lastAction = null;
+  form.addEventListener('form-action', (event) => {
+    const { actionId, valid, errors } = event.detail;
+    lastAction = { actionId, valid, errors };
+  });
+
+  document.getElementById('container').appendChild(form);
+
+  window.requiredWhitespaceVt = {
+    getState: () => ({
+      values: form.getValues(),
+      shown: [...form.shadowRoot.querySelectorAll('[role="alert"]')]
+        .map((error) => error.textContent.trim()),
+      invalid: [...form.shadowRoot.querySelectorAll('[data-field-name][aria-invalid="true"]')]
+        .map((field) => field.dataset.fieldName),
+      lastAction,
+    }),
+  };
+
+  const setTestIds = () => {
+    const btn = form.shadowRoot?.querySelector('[data-action-id="submit"]');
+    const title = form.shadowRoot?.querySelector('[data-field-name="title"]');
+    const notes = form.shadowRoot?.querySelector('[data-field-name="notes"]');
+    if (btn && title && notes) {
+      btn.setAttribute('data-testid', 'submit-btn');
+      title.setAttribute('data-testid', 'title-input');
+      notes.setAttribute('data-testid', 'notes-input');
+      return;
+    }
+    setTimeout(setTestIds, 0);
+  };
+  setTestIds();
+</script>

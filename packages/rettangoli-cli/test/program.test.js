@@ -52,7 +52,7 @@ function writeConfig(yaml) {
 }
 
 const PACKAGE_FUNCTIONS = {
-  "@rettangoli/check/cli": ["check"],
+  "@rettangoli/check/cli": ["check", "createChecker"],
   "@rettangoli/fe/cli": ["build", "check", "scaffold", "watch", "examples", "resolveServeContext"],
   "@rettangoli/sites/cli": ["buildSite", "watchSite", "initSite"],
   "@rettangoli/sites/watch-client": ["createViteWatchClientModuleSource"],
@@ -60,7 +60,13 @@ const PACKAGE_FUNCTIONS = {
   "@rettangoli/vt/cli": ["generate", "screenshot", "report", "accept", "createRettangoliVtWatchPlugin"],
 };
 
+const CLEAN_CHECK = {
+  result: { summary: { total: 0, bySeverity: { error: 0, warn: 0 } }, diagnostics: [] },
+  report: "[Check] No issues found.",
+};
+
 const RESULTS = {
+  createChecker: () => async () => CLEAN_CHECK,
   resolveServeContext: () => ({ publicEntryPath: "/public/main.js" }),
   createRettangoliVtWatchPlugin: (args) => ({ name: "vt-plugin", args }),
 };
@@ -126,7 +132,7 @@ test("fe build merges the fe config into the options", async () => {
   writeConfig("fe:\n  dirs: [src/components]\n  outfile: dist/main.js\n");
   const { loaded, calls } = await run("fe", "build", "-d", "-s", "src/setup.web.js");
 
-  assert.deepEqual(loaded, ["@rettangoli/fe/cli"]);
+  assert.deepEqual(loaded, ["@rettangoli/fe/cli", "@rettangoli/check/cli"]);
   assert.deepEqual(calls, [
     {
       fn: "build",
@@ -141,6 +147,11 @@ test("fe build merges the fe config into the options", async () => {
         },
       ],
     },
+    // The check runs after the build, on the directories the build used.
+    {
+      fn: "createChecker",
+      args: [{ cwd: projectDirectory, dirs: ["src/components"], maxDiagnostics: 10 }],
+    },
   ]);
 });
 
@@ -152,11 +163,15 @@ test("fe watch with watchVt adds the vt watch plugin", async () => {
     "@rettangoli/fe/cli",
     "@rettangoli/vt/cli",
     "@rettangoli/sites/watch-client",
+    "@rettangoli/check/cli",
   ]);
   assert.deepEqual(
     calls.map(({ fn }) => fn),
-    ["resolveServeContext", "createRettangoliVtWatchPlugin", "watch"],
+    ["resolveServeContext", "createRettangoliVtWatchPlugin", "watch", "createChecker"],
   );
+  assert.deepEqual(calls[3].args, [
+    { cwd: projectDirectory, dirs: ["src/components"], maxDiagnostics: 10 },
+  ]);
   assert.deepEqual(calls[0].args, [{ cwd: projectDirectory, outfile: undefined }]);
 
   const [watchOptions] = calls[2].args;

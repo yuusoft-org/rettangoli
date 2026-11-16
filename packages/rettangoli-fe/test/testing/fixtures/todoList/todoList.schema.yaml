@@ -1,0 +1,6 @@
+componentName: todo-list
+propsSchema:
+  type: object
+  properties:
+    heading:
+      type: string
