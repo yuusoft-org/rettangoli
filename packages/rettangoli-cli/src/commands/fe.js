@@ -1,4 +1,5 @@
 import { requireConfig } from "../config.js";
+import { createFeCheckReporter } from "../fe-check.js";
 import { resolveFeOptions } from "../fe-config.js";
 import { parsePortOption } from "../options.js";
 import { warnFeSkew } from "../package-resolution.js";
@@ -20,6 +21,9 @@ export function registerFeCommands(program, { load, version }) {
       "after",
       `
 
+After a successful build, the diagnostics of rtgl check are printed for the
+same directories. They never fail the build; use rtgl check to gate CI.
+
 Examples:
   $ rtgl fe build
   $ rtgl fe build --sourcemap hidden
@@ -36,6 +40,8 @@ Examples:
       resolveFeOptions(requireConfig(), process.cwd(), options, { command: "build" });
       warnFeSkew({ cwd: process.cwd(), command: "build", rtglVersion: version });
       await build(options);
+      // Informational: the build has already succeeded and stays that way.
+      await createFeCheckReporter({ load, cwd: process.cwd(), dirs: options.dirs }).run();
     });
 
   feCommand
@@ -100,6 +106,9 @@ Examples:
       "after",
       `
 
+The diagnostics of rtgl check are printed at startup and again when a change
+in the component directories changes them. They never stop the watcher.
+
 Examples:
   $ rtgl fe watch
   $ rtgl fe watch --port 8080
@@ -140,7 +149,16 @@ Examples:
         ];
       }
 
-      await watch(options);
+      const server = await watch(options);
+      const checkReporter = createFeCheckReporter({
+        load,
+        cwd: process.cwd(),
+        dirs: options.dirs,
+      });
+      if (typeof server?.watcher?.on === "function") {
+        checkReporter.watch(server.watcher);
+      }
+      await checkReporter.run();
     });
 
   feCommand
