@@ -9,6 +9,8 @@ sidebarId: fe-store
 
 The `.store.js` file manages component state. It defines the initial state, selectors for derived data, `selectViewData` for the view layer, and actions for state mutations. State updates use [Immer](https://immerjs.github.io/immer/), so actions can use plain assignments.
 
+A store has no side effects and does not read the environment: no network, timers, DOM, storage, `console`, `Date.now()` or `Math.random()`. Read such a value in a handler and pass it to an action as payload. A store file also keeps no mutable state at module scope, because every instance of the component would share it. `rtgl check` reports both (`RTGL-CHECK-STORE-001`, `RTGL-CHECK-MODULE-001`).
+
 ## Required Export Order
 
 Store files must follow this order:
