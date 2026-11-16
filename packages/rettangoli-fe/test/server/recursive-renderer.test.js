@@ -471,6 +471,16 @@ describe("renderDocument", () => {
     );
   });
 
+  it("derives dir from lang unless the caller sets it", () => {
+    expect(renderDocument({ html: "", lang: "ar" }))
+      .toContain('<html lang="ar" dir="rtl">');
+    expect(renderDocument({ html: "", lang: "en" }))
+      .toContain('<html lang="en" dir="ltr">');
+    expect(renderDocument({ html: "", lang: "ar", htmlAttributes: { dir: "ltr" } }))
+      .toContain('<html dir="ltr" lang="ar">');
+    expect(renderDocument({ html: "" })).toContain("<html>");
+  });
+
   it("requires serialized HTML and validates document attribute names", () => {
     expect(() => renderDocument()).toThrow("`html` must be a string");
     expect(() =>

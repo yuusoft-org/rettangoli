@@ -1,3 +1,4 @@
+import { getLocaleDirection } from "../core/i18n/direction.js";
 import { parse as parseTemplate } from "jempl";
 import { h } from "snabbdom/build/h.js";
 
@@ -544,6 +545,10 @@ export const renderDocument = ({
   const resolvedHtmlAttributes = { ...htmlAttributes };
   if (lang !== undefined) {
     resolvedHtmlAttributes.lang = lang;
+    // The document direction follows `lang` unless the caller sets `dir`.
+    if (resolvedHtmlAttributes.dir === undefined) {
+      resolvedHtmlAttributes.dir = getLocaleDirection(lang);
+    }
   }
   const htmlAttrs = attributesToString(
     resolvedHtmlAttributes,
