@@ -33,8 +33,8 @@ class RettangoliTagElement extends HTMLElement {
           max-width: 100%;
           width: 100%;
           height: 24px;
-          padding-left: 10px;
-          padding-right: 10px;
+          padding-inline-start: 10px;
+          padding-inline-end: 10px;
           gap: 6px;
           box-sizing: border-box;
           border: 1px solid transparent;

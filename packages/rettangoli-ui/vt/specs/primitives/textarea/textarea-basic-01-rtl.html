@@ -1,0 +1,13 @@
+---
+title: Textarea - Basic - Default Field - RTL
+dir: rtl
+description: Verifies baseline textarea rendering with default rows and columns behavior.
+specs:
+  - 'Same content as `textarea-basic-01.html`, rendered with `dir="rtl"` on the document.'
+  - Textarea renders baseline border and padding styles.
+  - Default sizing is stable in wrapped layout context.
+  - Empty state remains visually consistent.
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-textarea></rtgl-textarea>
+</rtgl-view>

@@ -1,0 +1,94 @@
+---
+title: View - Logical Sides - RTL
+dir: rtl
+description: Verifies that `l` and `r` side attributes resolve to the start and end of the reading direction, so under `dir="rtl"` they land on the physical right and left.
+specs:
+  - '`ml`, `pl`, `bwl` and `edge="l"` apply to the inline-start side, which is the physical right in RTL.'
+  - '`mr`, `pr`, `bwr` and `edge="r"` apply to the inline-end side, which is the physical left in RTL.'
+  - '`mh` and `ph` stay symmetric.'
+  - '`mt` and `pt` are not affected by direction.'
+steps:
+  - action: assert
+    type: js
+    fn: rtlSidesVt.measure
+    value:
+      direction: rtl
+      ml: right
+      mr: left
+      mh: both
+      mt: none
+      pl: right
+      pr: left
+      ph: both
+      bwl: right
+      bwr: left
+      edgeL: right
+      edgeR: left
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f">
+  <rtgl-view d="h" g="lg" av="c">
+    <rtgl-text w="120">margin</rtgl-text>
+    <rtgl-view g="xs"><rtgl-view id="c-ml" bgc="mu"><rtgl-view id="b-ml" bgc="ac" wh="50" ml="xl"></rtgl-view></rtgl-view><rtgl-text s="sm">ml</rtgl-text></rtgl-view>
+    <rtgl-view g="xs"><rtgl-view id="c-mr" bgc="mu"><rtgl-view id="b-mr" bgc="ac" wh="50" mr="xl"></rtgl-view></rtgl-view><rtgl-text s="sm">mr</rtgl-text></rtgl-view>
+    <rtgl-view g="xs"><rtgl-view id="c-mh" bgc="mu"><rtgl-view id="b-mh" bgc="ac" wh="50" mh="xl"></rtgl-view></rtgl-view><rtgl-text s="sm">mh</rtgl-text></rtgl-view>
+    <rtgl-view g="xs"><rtgl-view id="c-mt" bgc="mu"><rtgl-view id="b-mt" bgc="ac" wh="50" mt="xl"></rtgl-view></rtgl-view><rtgl-text s="sm">mt</rtgl-text></rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view d="h" g="lg" av="c">
+    <rtgl-text w="120">padding</rtgl-text>
+    <rtgl-view g="xs"><rtgl-view id="c-pl" bgc="mu" pl="xl"><rtgl-view id="b-pl" bgc="ac" wh="50"></rtgl-view></rtgl-view><rtgl-text s="sm">pl</rtgl-text></rtgl-view>
+    <rtgl-view g="xs"><rtgl-view id="c-pr" bgc="mu" pr="xl"><rtgl-view id="b-pr" bgc="ac" wh="50"></rtgl-view></rtgl-view><rtgl-text s="sm">pr</rtgl-text></rtgl-view>
+    <rtgl-view g="xs"><rtgl-view id="c-ph" bgc="mu" ph="xl"><rtgl-view id="b-ph" bgc="ac" wh="50"></rtgl-view></rtgl-view><rtgl-text s="sm">ph</rtgl-text></rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view d="h" g="lg" av="c">
+    <rtgl-text w="120">border</rtgl-text>
+    <rtgl-view g="xs"><rtgl-view id="b-bwl" bgc="mu" bc="ac" bwl="xl" wh="50"></rtgl-view><rtgl-text s="sm">bwl</rtgl-text></rtgl-view>
+    <rtgl-view g="xs"><rtgl-view id="b-bwr" bgc="mu" bc="ac" bwr="xl" wh="50"></rtgl-view><rtgl-text s="sm">bwr</rtgl-text></rtgl-view>
+  </rtgl-view>
+
+  <rtgl-view d="h" g="lg" av="c">
+    <rtgl-text w="120">edge</rtgl-text>
+    <rtgl-view g="xs"><rtgl-view id="c-edge-l" pos="rel" bgc="mu" w="200" h="60"><rtgl-view id="b-edge-l" pos="abs" edge="l" bgc="ac" w="40"></rtgl-view></rtgl-view><rtgl-text s="sm">edge=l</rtgl-text></rtgl-view>
+    <rtgl-view g="xs"><rtgl-view id="c-edge-r" pos="rel" bgc="mu" w="200" h="60"><rtgl-view id="b-edge-r" pos="abs" edge="r" bgc="ac" w="40"></rtgl-view></rtgl-view><rtgl-text s="sm">edge=r</rtgl-text></rtgl-view>
+  </rtgl-view>
+</rtgl-view>
+
+<script>
+  // Reports the physical side on which each attribute takes effect.
+  const rect = (id) => document.getElementById(id).getBoundingClientRect();
+  const sideOf = (hasLeft, hasRight) => (
+    hasLeft && hasRight ? "both" : hasLeft ? "left" : hasRight ? "right" : "none"
+  );
+  const gapSide = (name) => {
+    const outer = rect(`c-${name}`);
+    const inner = rect(`b-${name}`);
+    return sideOf(inner.left - outer.left > 1, outer.right - inner.right > 1);
+  };
+  const borderSide = (name) => {
+    const style = getComputedStyle(document.getElementById(`b-${name}`));
+    return sideOf(parseFloat(style.borderLeftWidth) > 0, parseFloat(style.borderRightWidth) > 0);
+  };
+  const pinnedSide = (name) => {
+    const outer = rect(`c-${name}`);
+    const inner = rect(`b-${name}`);
+    return sideOf(Math.abs(inner.left - outer.left) < 1, Math.abs(outer.right - inner.right) < 1);
+  };
+
+  window.rtlSidesVt = {
+    measure: () => ({
+      direction: getComputedStyle(document.documentElement).direction,
+      ml: gapSide("ml"),
+      mr: gapSide("mr"),
+      mh: gapSide("mh"),
+      mt: gapSide("mt"),
+      pl: gapSide("pl"),
+      pr: gapSide("pr"),
+      ph: gapSide("ph"),
+      bwl: borderSide("bwl"),
+      bwr: borderSide("bwr"),
+      edgeL: pinnedSide("edge-l"),
+      edgeR: pinnedSide("edge-r"),
+    }),
+  };
+</script>

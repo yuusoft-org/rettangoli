@@ -1,0 +1,16 @@
+---
+title: Basic PopoverInput - RTL
+dir: rtl
+specs:
+  - 'Same content as `popover-input-basic.html`, rendered with `dir="rtl"` on the document.'
+---
+<rtgl-view id="container" g="lg" p="lg" wh="f" wrap>
+  <rtgl-popover-input id="popover-input" label="Label" value="Click me to edit" placeholder="Enter text"></rtgl-popover-input>
+</rtgl-view>
+
+<script>
+  const popoverInput = document.getElementById('popover-input');
+  popoverInput.addEventListener('value-change', (e) => {
+    console.log('Value changed:', e.detail);
+  });
+</script>

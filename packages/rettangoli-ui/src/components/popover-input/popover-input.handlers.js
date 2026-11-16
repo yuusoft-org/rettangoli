@@ -1,3 +1,4 @@
+import { getInlineEdge } from "../../common/direction.js";
 import { subscribeUiMessages } from "../../common/uiMessages.js";
 const normalizePopoverValue = (value) => {
   if (value === undefined || value === null || value === true) {
@@ -73,7 +74,7 @@ export const handleTextClick = (deps, payload) => {
 
   store.openPopover({
     position: {
-      x: event.currentTarget.getBoundingClientRect().left,
+      x: getInlineEdge(event.currentTarget.getBoundingClientRect(), "start", event.currentTarget),
       y: event.currentTarget.getBoundingClientRect().bottom,
     }
   });

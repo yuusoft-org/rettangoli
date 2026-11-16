@@ -132,6 +132,7 @@ Use breakpoint prefixes for different widths and alignment per viewport.
 - `index` sets the starting or controlled active slide (0-based index).
 - `nav` toggles the previous/next arrow controls (`true` by default).
 - `pager` toggles bottom dot controls (off by default).
+- under `dir="rtl"` the first slide sits on the right, the previous button moves to the right, and ArrowLeft goes to the next slide. `index`, `next()`, `prev()` and `goTo(index)` keep their meaning.
 
 ## Attributes
 

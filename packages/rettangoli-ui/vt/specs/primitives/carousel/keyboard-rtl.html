@@ -1,0 +1,104 @@
+---
+title: Carousel - Navigation - RTL
+dir: rtl
+description: Verifies that carousel controls follow the reading direction under `dir="rtl"`, where the next slide sits to the left.
+specs:
+  - The first slide starts at the right and the previous button sits on the right.
+  - ArrowLeft advances to the next slide and ArrowRight goes back.
+  - '`next()` and `goTo(index)` bring the requested slide into view.'
+skipInitialScreenshot: true
+animations: disabled
+steps:
+  - action: screenshot
+  - action: customEvent
+    name: vt:run-navigation
+  - action: waitFor
+    selector: '#result[data-status="complete"]'
+    state: attached
+    timeoutMs: 8000
+  - action: assert
+    type: js
+    global: carouselRtlVt
+    value:
+      prevButtonSide: right
+      nextButtonSide: left
+      initial: { index: 0, visibleSlide: 0 }
+      afterArrowLeft: { index: 1, visibleSlide: 1 }
+      afterArrowRight: { index: 0, visibleSlide: 0 }
+      afterNext: { index: 1, visibleSlide: 1 }
+      afterGoToLast: { index: 2, visibleSlide: 2 }
+  - action: screenshot
+---
+<rtgl-view d="v" g="md" p="lg" wh="f">
+  <rtgl-text id="result" c="mu-fg">WAITING</rtgl-text>
+  <rtgl-carousel id="carousel" g="lg">
+    <rtgl-view data-slide bgc="fg" br="xl" p="xl" h="260" d="v" g="sm">
+      <rtgl-text s="sm" c="ac">Slide 1</rtgl-text>
+      <rtgl-text s="h2" c="bg">First slide</rtgl-text>
+    </rtgl-view>
+    <rtgl-view data-slide bgc="ac" br="xl" p="xl" h="260" d="v" g="sm">
+      <rtgl-text s="sm" c="ac-fg">Slide 2</rtgl-text>
+      <rtgl-text s="h2" c="ac-fg">Second slide</rtgl-text>
+    </rtgl-view>
+    <rtgl-view data-slide bgc="bg" bc="bo" bw="xs" br="xl" p="xl" h="260" d="v" g="sm">
+      <rtgl-text s="sm" c="pr">Slide 3</rtgl-text>
+      <rtgl-text s="h2">Third slide</rtgl-text>
+    </rtgl-view>
+  </rtgl-carousel>
+</rtgl-view>
+
+<script>
+  const carousel = document.getElementById("carousel");
+  const result = document.getElementById("result");
+  const slides = Array.from(carousel.querySelectorAll("[data-slide]"));
+  const part = (name) => carousel.shadowRoot.querySelector(`[part~="${name}"]`);
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  // The slide whose center is closest to the center of the viewport.
+  const visibleSlide = () => {
+    const viewport = part("viewport").getBoundingClientRect();
+    const center = (viewport.left + viewport.right) / 2;
+    const distances = slides.map((slide) => {
+      const rect = slide.getBoundingClientRect();
+      return Math.abs((rect.left + rect.right) / 2 - center);
+    });
+    return distances.indexOf(Math.min(...distances));
+  };
+  const state = () => ({ index: carousel.index, visibleSlide: visibleSlide() });
+  const settle = async () => {
+    await wait(900);
+    return state();
+  };
+  const press = (key) => {
+    part("viewport").dispatchEvent(new KeyboardEvent("keydown", {
+      key,
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    }));
+    return settle();
+  };
+  const sideOf = (name) => {
+    const host = carousel.getBoundingClientRect();
+    const rect = part(name).getBoundingClientRect();
+    return (rect.left + rect.right) / 2 < (host.left + host.right) / 2 ? "left" : "right";
+  };
+
+  window.addEventListener("vt:run-navigation", async () => {
+    const report = {
+      prevButtonSide: sideOf("prev-button"),
+      nextButtonSide: sideOf("next-button"),
+      initial: state(),
+    };
+    report.afterArrowLeft = await press("ArrowLeft");
+    report.afterArrowRight = await press("ArrowRight");
+    carousel.next();
+    report.afterNext = await settle();
+    carousel.goTo(2);
+    report.afterGoToLast = await settle();
+
+    window.carouselRtlVt = report;
+    result.textContent = "DONE";
+    result.setAttribute("data-status", "complete");
+  });
+</script>

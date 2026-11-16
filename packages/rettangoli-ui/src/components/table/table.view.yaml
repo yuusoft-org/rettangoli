@@ -16,7 +16,7 @@ styles:
     border-bottom: 2px solid var(--border)
   th:
     padding: 12px
-    text-align: left
+    text-align: start
     font-weight: 500
     color: var(--foreground)
     background-color: var(--muted)

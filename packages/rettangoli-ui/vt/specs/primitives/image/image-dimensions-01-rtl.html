@@ -1,0 +1,17 @@
+---
+title: Image - Dimensions - Width Height Variants - RTL
+dir: rtl
+description: Verifies image sizing behavior across default, fixed width, fixed height, and mixed dimensions.
+specs:
+  - 'Same content as `image-dimensions-01.html`, rendered with `dir="rtl"` on the document.'
+  - Default image size renders without explicit width or height.
+  - Explicit width and height attributes constrain image geometry.
+  - Width-only and height-only variants preserve expected scaling.
+---
+<rtgl-view g="lg" p="lg" w="100vw" h="100vh" d="h">
+    <rtgl-image src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-image w="200" h="150" src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-image w="200" src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-image w="100" src="/public/sample1.jpg"></rtgl-image>
+    <rtgl-image h="200" src="/public/sample1.jpg"></rtgl-image>
+</rtgl-view>

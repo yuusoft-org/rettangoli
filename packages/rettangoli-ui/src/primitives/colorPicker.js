@@ -1,3 +1,4 @@
+import { getInlineEdge } from "../common/direction.js";
 import { getUiMessage, subscribeUiMessages } from "../common/uiMessages.js";
 import { fieldTextAriaAttributes as fieldAriaAttributes, forwardFieldAria } from "../accessibility/field.js";
 import { hsvToHex, parseHex, rgbToHex, rgbToHsv } from "../common/color.js";
@@ -418,7 +419,10 @@ class RettangoliColorPickerElement extends HTMLElement {
     this._ensurePanel();
 
     const rect = this._triggerElement.getBoundingClientRect();
-    this._popoverElement.setAttribute('x', String(Math.round(rect.left)));
+    this._popoverElement.setAttribute(
+      'x',
+      String(Math.round(getInlineEdge(rect, "start", this._triggerElement))),
+    );
     this._popoverElement.setAttribute('y', String(Math.round(rect.bottom + 4)));
     this._popoverElement.setAttribute(
       'aria-label',

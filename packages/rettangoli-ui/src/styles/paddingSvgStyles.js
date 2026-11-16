@@ -18,19 +18,19 @@ export default css`
   padding-top: var(--spacing-xl);
 }
 :host([pr="xs"]) svg {
-  padding-right: var(--spacing-xs);
+  padding-inline-end: var(--spacing-xs);
 }
 :host([pr="sm"]) svg {
-  padding-right: var(--spacing-sm);
+  padding-inline-end: var(--spacing-sm);
 }
 :host([pr="md"]) svg {
-  padding-right: var(--spacing-md);
+  padding-inline-end: var(--spacing-md);
 }
 :host([pr="lg"]) svg {
-  padding-right: var(--spacing-lg);
+  padding-inline-end: var(--spacing-lg);
 }
 :host([pr="xl"]) svg {
-  padding-right: var(--spacing-xl);
+  padding-inline-end: var(--spacing-xl);
 }
 :host([pb="xs"]) svg {
   padding-bottom: var(--spacing-xs);
@@ -48,19 +48,19 @@ export default css`
   padding-bottom: var(--spacing-xl);
 }
 :host([pl="xs"]) svg {
-  padding-left: var(--spacing-xs);
+  padding-inline-start: var(--spacing-xs);
 }
 :host([pl="sm"]) svg {
-  padding-left: var(--spacing-sm);
+  padding-inline-start: var(--spacing-sm);
 }
 :host([pl="md"]) svg {
-  padding-left: var(--spacing-md);
+  padding-inline-start: var(--spacing-md);
 }
 :host([pl="lg"]) svg {
-  padding-left: var(--spacing-lg);
+  padding-inline-start: var(--spacing-lg);
 }
 :host([pl="xl"]) svg {
-  padding-left: var(--spacing-xl);
+  padding-inline-start: var(--spacing-xl);
 }
 :host([p="xs"]) svg {
   padding: var(--spacing-xs);
@@ -78,24 +78,24 @@ export default css`
   padding: var(--spacing-xl);
 }
 :host([ph="xs"]) svg {
-  padding-left: var(--spacing-xs);
-  padding-right: var(--spacing-xs);
+  padding-inline-start: var(--spacing-xs);
+  padding-inline-end: var(--spacing-xs);
 }
 :host([ph="sm"]) svg {
-  padding-left: var(--spacing-sm);
-  padding-right: var(--spacing-sm);
+  padding-inline-start: var(--spacing-sm);
+  padding-inline-end: var(--spacing-sm);
 }
 :host([ph="md"]) svg {
-  padding-left: var(--spacing-md);
-  padding-right: var(--spacing-md);
+  padding-inline-start: var(--spacing-md);
+  padding-inline-end: var(--spacing-md);
 }
 :host([ph="lg"]) svg {
-  padding-left: var(--spacing-lg);
-  padding-right: var(--spacing-lg);
+  padding-inline-start: var(--spacing-lg);
+  padding-inline-end: var(--spacing-lg);
 }
 :host([ph="xl"]) svg {
-  padding-left: var(--spacing-xl);
-  padding-right: var(--spacing-xl);
+  padding-inline-start: var(--spacing-xl);
+  padding-inline-end: var(--spacing-xl);
 }
 :host([pv="xs"]) svg {
   padding-top: var(--spacing-xs);

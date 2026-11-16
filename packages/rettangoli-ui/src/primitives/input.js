@@ -28,6 +28,11 @@ class RettangoliInputElement extends RettangoliInputBaseElement {
         :host {
           display: contents;
         }
+        /* A field pinned to left-to-right content still lines up with the
+           start edge of a right-to-left page. */
+        :host(:dir(rtl)) input[dir="ltr"] {
+          text-align: right;
+        }
         input {
           box-sizing: border-box;
           background-color: var(--background);
@@ -37,8 +42,8 @@ class RettangoliInputElement extends RettangoliInputBaseElement {
           letter-spacing: var(--sm-letter-spacing);
           border: 1px solid var(--ring);
           border-radius: var(--border-radius-lg);
-          padding-left: var(--spacing-md);
-          padding-right: var(--spacing-md);
+          padding-inline-start: var(--spacing-md);
+          padding-inline-end: var(--spacing-md);
           height: 32px;
           color: var(--foreground);
           outline: none;
@@ -48,8 +53,8 @@ class RettangoliInputElement extends RettangoliInputBaseElement {
           font-weight: var(--xs-font-weight);
           line-height: var(--xs-line-height);
           letter-spacing: var(--xs-letter-spacing);
-          padding-left: var(--spacing-md);
-          padding-right: var(--spacing-md);
+          padding-inline-start: var(--spacing-md);
+          padding-inline-end: var(--spacing-md);
           height: 24px;
         }
         input:focus {
@@ -89,7 +94,7 @@ class RettangoliInputElement extends RettangoliInputBaseElement {
         input[type="date"]::-webkit-date-and-time-value,
         input[type="time"]::-webkit-date-and-time-value,
         input[type="datetime-local"]::-webkit-date-and-time-value {
-          text-align: left;
+          text-align: start;
         }
         ${marginStyles}
         ${cursorStyles}
@@ -109,6 +114,7 @@ class RettangoliInputElement extends RettangoliInputBaseElement {
 
     // Create initial DOM structure
     this._inputElement = document.createElement('input');
+    this._syncTextDirection();
     this._styleElement = document.createElement('style');
 
     this.shadowRoot.appendChild(this._styleElement);
@@ -151,6 +157,26 @@ class RettangoliInputElement extends RettangoliInputBaseElement {
 
   set value(newValue) {
     this._inputElement.value = newValue;
+    this._syncTextDirection();
+  }
+
+  // A text field takes its direction from what the user typed, so
+  // right-to-left text reads correctly on a left-to-right page and the
+  // reverse. An empty field, and a date or time field, follows the page.
+  // Subclasses set `_fixedTextDirection` to pin the direction.
+  _syncTextDirection() {
+    const input = this._inputElement;
+    if (this._fixedTextDirection) {
+      input.dir = this._fixedTextDirection;
+      return;
+    }
+
+    const isText = input.type === "text" || input.type === "password";
+    if (isText && input.value !== "") {
+      input.dir = "auto";
+    } else {
+      input.removeAttribute("dir");
+    }
   }
 
   focus() {
@@ -167,6 +193,7 @@ class RettangoliInputElement extends RettangoliInputBaseElement {
   }
 
   _onInput = () => {
+    this._syncTextDirection();
     this._emitValueEvent('value-input');
   };
 
@@ -206,6 +233,7 @@ class RettangoliInputElement extends RettangoliInputBaseElement {
 
   _syncValueAttribute() {
     this._inputElement.value = this.getAttribute("value") ?? "";
+    this._syncTextDirection();
   }
 
   _updateInputAttributes() {
@@ -219,6 +247,7 @@ class RettangoliInputElement extends RettangoliInputBaseElement {
     const isDisabled = this.hasAttribute('disabled');
 
     this._setOrRemoveInputAttribute("type", type);
+    this._syncTextDirection();
     this._setOrRemoveInputAttribute("min", min);
     this._setOrRemoveInputAttribute("max", max);
     this._setOrRemoveInputAttribute("step", step);

@@ -35,6 +35,7 @@ This file is a curated index for LLM-based tools. Prefer linked docs over guessi
 - https://rettangoli.dev/ui/docs/introduction/component-model.md
 - https://rettangoli.dev/ui/docs/introduction/css-variables.md
 - https://rettangoli.dev/ui/docs/introduction/responsiveness.md
+- https://rettangoli.dev/ui/docs/introduction/right-to-left.md
 - https://rettangoli.dev/ui/docs/primitives/rtgl-view.md
 - https://rettangoli.dev/ui/docs/primitives/rtgl-button.md
 - https://rettangoli.dev/ui/docs/primitives/rtgl-input.md

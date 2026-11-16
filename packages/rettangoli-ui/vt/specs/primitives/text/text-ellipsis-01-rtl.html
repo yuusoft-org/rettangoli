@@ -1,0 +1,16 @@
+---
+title: Text - Ellipsis - Truncation - RTL
+dir: rtl
+description: Verifies single-line truncation behavior when ellipsis is enabled with constrained width.
+specs:
+  - 'Same content as `text-ellipsis-01.html`, rendered with `dir="rtl"` on the document.'
+  - Constrained width without ellipsis shows natural overflow behavior.
+  - Ellipsis mode truncates overflowed text to one line.
+  - Truncated text remains aligned within container spacing.
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+    <rtgl-view bgc="mu" p="md" g="lg">
+        <rtgl-text c="mu" w="140">Some text and some other text with ellipsis</rtgl-text>
+        <rtgl-text c="mu" ellipsis w="140">Some text and some other text with ellipsis</rtgl-text>
+    </rtgl-view>
+</rtgl-view>

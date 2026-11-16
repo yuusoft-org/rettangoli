@@ -1,0 +1,16 @@
+---
+title: Input - Type - Text and Password - RTL
+dir: rtl
+description: Verifies type switching between text and password input modes.
+specs:
+  - 'Same content as `input-types-01.html`, rendered with `dir="rtl"` on the document.'
+  - Missing type defaults to text behavior.
+  - Password type masks input characters visually.
+  - Mixed type controls render consistently in one layout.
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-text>text (default)</rtgl-text>
+  <rtgl-input></rtgl-input>
+  <rtgl-text>password</rtgl-text>
+  <rtgl-input type="password"></rtgl-input>
+</rtgl-view>

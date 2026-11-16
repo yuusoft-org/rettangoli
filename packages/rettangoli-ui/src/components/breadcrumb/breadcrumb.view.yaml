@@ -7,11 +7,14 @@ styles:
   a:
     text-decoration: none
     color: inherit
+  # The separator points toward the next item, which is to the left under RTL.
+  '.separator:dir(rtl)':
+    transform: scaleX(-1)
 template:
   - rtgl-view d=h av=c g=md:
       - $for item, i in items:
           - $if item.isSeparator:
-              - rtgl-svg wh=16 svg=${sep} c=mu-fg: null
+              - rtgl-svg class=separator wh=16 svg=${sep} c=mu-fg: null
             $elif item.isEllipsis:
               - rtgl-text s=sm c=mu-fg: ${item.label}
             $elif item.isInteractive && item.href:

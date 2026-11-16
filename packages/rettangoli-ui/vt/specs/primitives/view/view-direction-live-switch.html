@@ -1,0 +1,83 @@
+---
+title: View - Direction - Live Switch
+description: Verifies that changing `dir` on the document at runtime mirrors the layout and repositions an open overlay, with no reload.
+specs:
+  - The page starts left to right.
+  - 'Setting `dir="rtl"` on `<html>` mirrors rows, `ml`, text alignment and the open tooltip.'
+  - 'Setting `dir="ltr"` again restores the original layout.'
+steps:
+  - action: assert
+    type: js
+    fn: liveSwitchVt.measure
+    value: { direction: ltr, firstChild: left, ml: left, tooltip: right-of-anchor }
+  - action: customEvent
+    name: vt:set-dir
+    detail: { dir: rtl }
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: liveSwitchVt.measure
+    value: { direction: rtl, firstChild: right, ml: right, tooltip: left-of-anchor }
+  - action: screenshot
+  - action: customEvent
+    name: vt:set-dir
+    detail: { dir: ltr }
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: liveSwitchVt.measure
+    value: { direction: ltr, firstChild: left, ml: left, tooltip: right-of-anchor }
+  - action: screenshot
+---
+<rtgl-view d="v" g="lg" p="lg" wh="f">
+  <rtgl-text s="lg">Live direction switch</rtgl-text>
+  <rtgl-view id="row" d="h" g="md" bw="xs" bc="bo" p="md" w="f">
+    <rtgl-view id="first" bgc="ac" wh="50" ah="c" av="c"><rtgl-text c="ac-fg">1</rtgl-text></rtgl-view>
+    <rtgl-view bgc="mu" wh="50" ah="c" av="c"><rtgl-text>2</rtgl-text></rtgl-view>
+    <rtgl-view id="c-ml" bgc="mu"><rtgl-view id="b-ml" bgc="ac" wh="50" ml="xl"></rtgl-view></rtgl-view>
+  </rtgl-view>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text ta="s" w="f">Start-aligned text</rtgl-text>
+    <rtgl-text ta="e" w="f">End-aligned text</rtgl-text>
+  </rtgl-view>
+  <rtgl-view d="h" g="md" av="c">
+    <rtgl-button>Primary</rtgl-button>
+    <rtgl-button v="ol">Secondary</rtgl-button>
+    <rtgl-input placeholder="Placeholder"></rtgl-input>
+  </rtgl-view>
+</rtgl-view>
+
+<div id="anchor" style="position: fixed; left: 636px; top: 496px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip id="tooltip" open content="place=r" x="640" y="500" place="r"></rtgl-tooltip>
+
+<script>
+  const rect = (id) => document.getElementById(id).getBoundingClientRect();
+  const tooltipRect = () => document.getElementById("tooltip")
+    .shadowRoot.querySelector("rtgl-popover")
+    ?.shadowRoot.querySelector(".popover-container")
+    ?.getBoundingClientRect();
+
+  window.addEventListener("vt:set-dir", (event) => {
+    document.documentElement.setAttribute("dir", event.detail.dir);
+  });
+
+  window.liveSwitchVt = {
+    measure: () => {
+      const row = rect("row");
+      const first = rect("first");
+      const outer = rect("c-ml");
+      const inner = rect("b-ml");
+      const tooltip = tooltipRect();
+      return {
+        direction: getComputedStyle(document.documentElement).direction,
+        firstChild: first.left - row.left < row.right - first.right ? "left" : "right",
+        ml: inner.left - outer.left > 1 ? "left" : outer.right - inner.right > 1 ? "right" : "none",
+        tooltip: !tooltip
+          ? "missing"
+          : tooltip.left >= 640 ? "right-of-anchor" : tooltip.right <= 640 ? "left-of-anchor" : "overlapping-anchor",
+      };
+    },
+  };
+</script>

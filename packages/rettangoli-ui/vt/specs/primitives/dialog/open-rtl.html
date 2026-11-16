@@ -1,0 +1,42 @@
+---
+title: Dialog - Open - Default Visible - RTL
+dir: rtl
+description: Verifies dialog rendering when initialized in an open state.
+specs:
+  - 'Same content as `open.html`, rendered with `dir="rtl"` on the document.'
+  - Dialog starts visible with `open` attribute applied.
+  - Content layout remains stable without interaction.
+  - Close event listener clears dialog open state.
+skipInitialScreenshot: true
+steps:
+  - action: waitFor
+    selector: '#dialog[open]'
+    state: visible
+    timeoutMs: 1200
+  - action: wait
+    ms: 220
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-button id="button">Open Dialog</rtgl-button>
+  <rtgl-dialog id="dialog" open>
+    <rtgl-view slot="content" g="md">
+      <rtgl-text s="lg">Dialog Content</rtgl-text>
+      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+    </rtgl-view>
+  </rtgl-dialog>
+</rtgl-view>
+
+<script>
+  const button = document.getElementById('button');
+  const dialog = document.getElementById('dialog');
+  
+  button.addEventListener('click', () => {
+    dialog.setAttribute('open', '');
+  });
+  
+  // Listen for dialog close events (overlay click or ESC key)
+  dialog.addEventListener('close', () => {
+    dialog.removeAttribute('open');
+  });
+</script>

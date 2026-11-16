@@ -1,0 +1,17 @@
+---
+title: "Basic - RTL"
+dir: rtl
+specs:
+  - 'Same content as `basic.html`, rendered with `dir="rtl"` on the document.'
+---
+<rtgl-view g="lg" wrap p="lg">
+  <rtgl-slider-input id="slider-input"></rtgl-slider-input>
+</rtgl-view>
+
+<script>
+  const sliderInput = document.getElementById('slider-input');
+
+  sliderInput.addEventListener('value-change', (e) => {
+    console.log('value-change', e.detail);
+  });
+</script>

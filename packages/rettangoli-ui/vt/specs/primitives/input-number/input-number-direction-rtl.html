@@ -1,0 +1,35 @@
+---
+title: Input Number - Direction - RTL
+dir: rtl
+description: Verifies that numeric fields keep left-to-right content under `dir="rtl"`, so a minus sign stays in front of the number.
+specs:
+  - The page is right to left.
+  - Number and duration inputs render their value left to right.
+  - A text input on the same page follows the page direction.
+steps:
+  - action: assert
+    type: js
+    fn: numberDirectionVt.measure
+    value:
+      number: ltr
+      negative: ltr
+      duration: ltr
+      text: rtl
+---
+<rtgl-view d="v" g="md" p="lg" w="420">
+  <rtgl-input-number id="number" value="1250" w="f"></rtgl-input-number>
+  <rtgl-input-number id="negative" value="-42" w="f"></rtgl-input-number>
+  <rtgl-input-duration id="duration" value="190000" w="f"></rtgl-input-duration>
+  <rtgl-input id="text" placeholder="Placeholder" w="f"></rtgl-input>
+</rtgl-view>
+
+<script>
+  window.numberDirectionVt = {
+    measure: () => Object.fromEntries(
+      ["number", "negative", "duration", "text"].map((id) => {
+        const control = document.getElementById(id).shadowRoot.querySelector("input");
+        return [id, getComputedStyle(control).direction];
+      }),
+    ),
+  };
+</script>

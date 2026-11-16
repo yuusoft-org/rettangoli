@@ -50,8 +50,8 @@ class RettangoliTextAreaElement extends HTMLElement {
           border-radius: var(--border-radius-lg);
           padding-top: var(--spacing-md);
           padding-bottom: var(--spacing-md);
-          padding-left: var(--spacing-md);
-          padding-right: var(--spacing-md);
+          padding-inline-start: var(--spacing-md);
+          padding-inline-end: var(--spacing-md);
           color: var(--foreground);
           outline: none;
         }
@@ -96,7 +96,19 @@ class RettangoliTextAreaElement extends HTMLElement {
     this._textareaElement.addEventListener('change', this._onChange);
   }
 
+  // The field takes its direction from what the user typed, so right-to-left
+  // text reads correctly on a left-to-right page and the reverse. An empty
+  // field follows the page.
+  _syncTextDirection() {
+    if (this._textareaElement.value !== "") {
+      this._textareaElement.dir = "auto";
+    } else {
+      this._textareaElement.removeAttribute("dir");
+    }
+  }
+
   _onInput = () => {
+    this._syncTextDirection();
     this.dispatchEvent(new CustomEvent('value-input', {
       detail: {
         value: this._textareaElement.value,
@@ -137,6 +149,7 @@ class RettangoliTextAreaElement extends HTMLElement {
 
   set value(val) {
     this._textareaElement.value = val;
+    this._syncTextDirection();
   }
 
   connectedCallback() {
@@ -200,6 +213,7 @@ class RettangoliTextAreaElement extends HTMLElement {
       if (this._textareaElement.value !== value) {
         this._textareaElement.value = value;
       }
+      this._syncTextDirection();
     });
   }
 

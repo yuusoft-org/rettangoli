@@ -1,3 +1,4 @@
+import { getInlineEdge } from "../../common/direction.js";
 import { subscribeUiMessages } from "../../common/uiMessages.js";
 import { PLACEHOLDER_TYPES, VALUE_ATTRIBUTE_TYPES } from "./fieldTypes.js";
 import {
@@ -367,7 +368,7 @@ export const handleSectionActionClick = (deps, payload) => {
         actionId,
         values: selectFormValues({ state: store.getState(), props }),
         position: {
-          x: rect.left,
+          x: getInlineEdge(rect, "start", event.currentTarget),
           y: rect.bottom,
         },
         anchorRect,

@@ -33,9 +33,9 @@ class RettangoliSvgElement extends HTMLElement {
           max-width: inherit;
           max-height: inherit;
           margin-top: inherit;
-          margin-right: inherit;
+          margin-inline-end: inherit;
           margin-bottom: inherit;
-          margin-left: inherit;
+          margin-inline-start: inherit;
           color: inherit;
           cursor: inherit;
           flex-shrink: inherit;

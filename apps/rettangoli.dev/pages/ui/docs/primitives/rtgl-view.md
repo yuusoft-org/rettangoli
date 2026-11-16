@@ -493,6 +493,8 @@ Use `sv` for vertical scroll, `sh` for horizontal scroll, or `overflow="hidden"`
 
 Controls the spacing inside the container around its content. Use predefined sizes from `xs` to `xl` for consistent spacing.
 
+`pl` and `pr` are the start and end of the reading direction: left and right on a left-to-right page, mirrored under `dir="rtl"`. See [Right-to-Left](/ui/docs/introduction/right-to-left).
+
 ```html codePreview
 <rtgl-view d="h" g="md">
   <rtgl-view bgc="ac" wh="80" p="md">
@@ -507,6 +509,8 @@ Controls the spacing inside the container around its content. Use predefined siz
 ## Margin
 
 Controls the external spacing outside the container. Use predefined sizes from `xs` to `xl` for consistent spacing.
+
+`ml` and `mr` are the start and end of the reading direction: left and right on a left-to-right page, mirrored under `dir="rtl"`. See [Right-to-Left](/ui/docs/introduction/right-to-left).
 
 ```html codePreview
 <rtgl-view d="h" g="md">
@@ -563,6 +567,8 @@ Control horizontal and vertical spacing independently using `gh` and `gv`.
 ## Border Width
 
 Controls the thickness of the container border. Use predefined sizes from `xs` to `xl` for consistent border widths.
+
+`bwl` and `bwr` are the start and end of the reading direction: left and right on a left-to-right page, mirrored under `dir="rtl"`. See [Right-to-Left](/ui/docs/introduction/right-to-left).
 
 ```html codePreview
 <rtgl-view d="h" g="md">
@@ -744,6 +750,7 @@ Controls the edge anchoring for positioned elements.
 ### Behavior & precedence
 
 - `edge` sets edge anchors using short values: `t | r | b | l | f`.
+- `l` and `r` are the start and end of the reading direction: `edge="l"` pins to the left on a left-to-right page and to the right under `dir="rtl"`. See [Right-to-Left](/ui/docs/introduction/right-to-left).
 - `edge` does not move an element by itself; pair it with `pos` for predictable placement.
 - Responsive `sm-edge`/`md-edge`/`lg-edge`/`xl-edge` follows normal breakpoint precedence.
 

@@ -83,7 +83,7 @@ A navigation sidebar component with header, grouped items, and selectable states
 - `selected-item-id` drives active styling.
 - `mode` changes width and label/icon density.
 - `w` overrides computed width (for example `w="f"` fills the parent width).
-- `bwr` controls right border width (`bwr="none"` hides the border).
+- `bwr` controls the width of the border on the end side: right on a left-to-right page, left under `dir="rtl"` (`bwr="none"` hides the border).
 - `hide-header` hides the header block.
 - `tooltip` enables hover tooltips for compact modes and uses `item.tooltip`, then `item.label`, then deprecated `item.title`.
 - `show-compact-tooltip` / `showCompactTooltip` remains supported as a deprecated alias.

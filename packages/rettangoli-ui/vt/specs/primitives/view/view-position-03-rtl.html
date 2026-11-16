@@ -1,0 +1,34 @@
+---
+title: View - Position - Relative and Absolute - RTL
+dir: rtl
+description: Verifies absolute child positioning inside relative parents for all edge presets.
+specs:
+  - 'Same content as `view-position-03.html`, rendered with `dir="rtl"` on the document.'
+  - Relative parent establishes positioning context.
+  - Absolute children respect `edge` presets (`t`, `b`, `l`, `r`, `f`).
+---
+<rtgl-view d="h" g="lg" p="lg" wh="f">
+    <rtgl-view bgc="mu" wh="80" pos="rel">
+        <rtgl-view pos="abs" edge="b" bgc="ac" h="24"></rtgl-view>
+        <rtgl-view pos="abs" edge="t" bgc="ac" h="24"></rtgl-view>
+    </rtgl-view>
+    <rtgl-view bgc="mu" wh="80" pos="rel">
+        <rtgl-view pos="abs" edge="r" bgc="ac" w="24"></rtgl-view>
+        <rtgl-view pos="abs" edge="l" bgc="ac" w="24"></rtgl-view>
+    </rtgl-view>
+    <rtgl-view bgc="mu" wh="80" pos="rel">
+        <rtgl-view pos="abs" edge="f" bgc="ac"></rtgl-view>
+    </rtgl-view>
+    <rtgl-view bgc="mu" wh="80" pos="rel">
+        <rtgl-view pos="abs" edge="f" bgc="ac"></rtgl-view>
+        <rtgl-view pos="abs" edge="b" bgc="de" h="24"></rtgl-view>
+    </rtgl-view>
+    <rtgl-view bgc="mu" wh="80" pos="rel">
+        <rtgl-view bgc="ac" wh="48"></rtgl-view>
+        <rtgl-view pos="abs" edge="t" bgc="de" h="24"></rtgl-view>
+    </rtgl-view>
+    <rtgl-view bgc="mu" wh="80" pos="rel">
+        <rtgl-view pos="abs" edge="t" bgc="de" h="24"></rtgl-view>
+        <rtgl-view bgc="ac" wh="48" z="1"></rtgl-view>
+    </rtgl-view>
+</rtgl-view>

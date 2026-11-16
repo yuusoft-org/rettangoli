@@ -1,0 +1,83 @@
+---
+title: Tooltip - Placement - RTL
+dir: rtl
+description: Verifies that every `place` value resolves against the reading direction, so under `dir="rtl"` the `r` placements open on the physical left and the `l` placements on the physical right.
+specs:
+  - Each red dot marks the anchor point of the tooltip labelled with its `place` value.
+  - '`t` and `b` stay centered on the anchor.'
+  - '`ts` and `bs` align their inline-start edge with the anchor, so they extend to the left of it.'
+  - '`te` and `be` align their inline-end edge with the anchor, so they extend to the right of it.'
+  - '`r`, `rs` and `re` open on the inline-end side, which is the physical left.'
+  - '`l`, `ls` and `le` open on the inline-start side, which is the physical right.'
+steps:
+  - action: waitFor
+    selector: 'rtgl-tooltip[data-place="le"]'
+    state: attached
+    timeoutMs: 1500
+  - action: wait
+    ms: 200
+  - action: assert
+    type: js
+    fn: tooltipPlacementVt.measure
+    value:
+      ts: left-of-anchor
+      t: centered
+      te: right-of-anchor
+      rs: left-of-anchor
+      r: left-of-anchor
+      re: left-of-anchor
+      bs: left-of-anchor
+      b: centered
+      be: right-of-anchor
+      ls: right-of-anchor
+      l: right-of-anchor
+      le: right-of-anchor
+  - action: screenshot
+skipInitialScreenshot: true
+---
+<div style="position: fixed; left: 246px; top: 146px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="ts" open content="place=ts" x="250" y="150" place="ts"></rtgl-tooltip>
+<div style="position: fixed; left: 636px; top: 146px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="t" open content="place=t" x="640" y="150" place="t"></rtgl-tooltip>
+<div style="position: fixed; left: 1026px; top: 146px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="te" open content="place=te" x="1030" y="150" place="te"></rtgl-tooltip>
+<div style="position: fixed; left: 246px; top: 286px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="rs" open content="place=rs" x="250" y="290" place="rs"></rtgl-tooltip>
+<div style="position: fixed; left: 636px; top: 286px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="r" open content="place=r" x="640" y="290" place="r"></rtgl-tooltip>
+<div style="position: fixed; left: 1026px; top: 286px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="re" open content="place=re" x="1030" y="290" place="re"></rtgl-tooltip>
+<div style="position: fixed; left: 246px; top: 426px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="bs" open content="place=bs" x="250" y="430" place="bs"></rtgl-tooltip>
+<div style="position: fixed; left: 636px; top: 426px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="b" open content="place=b" x="640" y="430" place="b"></rtgl-tooltip>
+<div style="position: fixed; left: 1026px; top: 426px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="be" open content="place=be" x="1030" y="430" place="be"></rtgl-tooltip>
+<div style="position: fixed; left: 246px; top: 566px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="ls" open content="place=ls" x="250" y="570" place="ls"></rtgl-tooltip>
+<div style="position: fixed; left: 636px; top: 566px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="l" open content="place=l" x="640" y="570" place="l"></rtgl-tooltip>
+<div style="position: fixed; left: 1026px; top: 566px; width: 8px; height: 8px; border-radius: 50%; background: red;"></div>
+<rtgl-tooltip data-place="le" open content="place=le" x="1030" y="570" place="le"></rtgl-tooltip>
+
+<script>
+  // Reports where each tooltip sits relative to its anchor point.
+  window.tooltipPlacementVt = {
+    measure: () => Object.fromEntries(
+      Array.from(document.querySelectorAll("rtgl-tooltip")).map((tooltip) => {
+        const x = Number(tooltip.getAttribute("x"));
+        const rect = tooltip.shadowRoot.querySelector("rtgl-popover")
+          ?.shadowRoot.querySelector(".popover-container")
+          ?.getBoundingClientRect();
+        let relation = "missing";
+        if (rect && rect.width > 0) {
+          if (Math.abs((rect.left + rect.right) / 2 - x) <= 2) relation = "centered";
+          else if (rect.right <= x + 1) relation = "left-of-anchor";
+          else if (rect.left >= x - 1) relation = "right-of-anchor";
+          else relation = "overlapping-anchor";
+        }
+        return [tooltip.dataset.place, relation];
+      }),
+    ),
+  };
+</script>

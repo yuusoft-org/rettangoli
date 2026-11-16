@@ -1,0 +1,24 @@
+---
+title: "Breadcrumb - Long Path - RTL"
+dir: rtl
+specs:
+  - 'Same content as `long-path.html`, rendered with `dir="rtl"` on the document.'
+---
+<rtgl-view g="lg" h="100vh" w="f" wrap>
+  <rtgl-breadcrumb id="breadcrumb">
+  </rtgl-breadcrumb>
+</rtgl-view>
+
+<script>
+  const breadcrumb = document.getElementById('breadcrumb');
+  breadcrumb.max = 4;
+  breadcrumb.items = [
+    { label: "Dashboard", id: "breadcrumb-dashboard", path: "/dashboard" },
+    { label: "Projects", id: "breadcrumb-projects", path: "/dashboard/projects" },
+    { label: "Web Development", id: "breadcrumb-web-dev", path: "/dashboard/projects/web-dev" },
+    { label: "React Components", id: "breadcrumb-react", path: "/dashboard/projects/web-dev/react-components" },
+    { label: "UI Library", id: "breadcrumb-ui-lib", path: "/dashboard/projects/web-dev/react-components/ui-library" },
+    { label: "Breadcrumb Component", current: true }
+  ];
+  breadcrumb.render();
+</script>

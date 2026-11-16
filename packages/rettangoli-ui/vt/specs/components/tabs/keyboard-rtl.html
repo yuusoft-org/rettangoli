@@ -1,0 +1,78 @@
+---
+title: Tabs - Keyboard - RTL
+dir: rtl
+description: Verifies that arrow keys follow the visual order of the tabs under `dir="rtl"`, where the next tab sits to the left.
+specs:
+  - The first tab renders at the right end of the tab row.
+  - ArrowLeft moves focus to the next tab.
+  - ArrowRight moves focus back to the previous tab.
+  - Home and End still move to the first and last tab.
+skipInitialScreenshot: true
+steps:
+  - action: customEvent
+    name: vt:run-keyboard
+  - action: waitFor
+    selector: '#result[data-status="complete"]'
+    state: attached
+    timeoutMs: 3000
+  - action: assert
+    type: js
+    global: tabsKeyboardVt
+    value:
+      firstTabSide: right
+      afterArrowLeft: tab2
+      afterSecondArrowLeft: tab3
+      afterArrowRight: tab2
+      afterEnd: tab3
+      afterHome: tab1
+      afterFinalArrowLeft: tab2
+  - action: screenshot
+---
+<rtgl-view g="lg" p="lg" h="100vh" w="f">
+  <rtgl-text id="result" c="mu-fg">WAITING</rtgl-text>
+  <rtgl-tabs id="tabs" selected-tab="tab1"></rtgl-tabs>
+</rtgl-view>
+
+<script>
+  const tabs = document.getElementById("tabs");
+  const result = document.getElementById("result");
+  tabs.items = [
+    { label: "Tab 1", id: "tab1" },
+    { label: "Tab 2", id: "tab2" },
+    { label: "Tab 3", id: "tab3" },
+  ];
+  tabs.render();
+
+  const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  const focusedId = () => tabs.shadowRoot.activeElement?.dataset.id ?? null;
+  const press = async (key) => {
+    tabs.shadowRoot.activeElement.dispatchEvent(new KeyboardEvent("keydown", {
+      key,
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+    }));
+    await nextFrame();
+    return focusedId();
+  };
+
+  window.addEventListener("vt:run-keyboard", async () => {
+    const row = tabs.shadowRoot.querySelector('[role="tablist"]').getBoundingClientRect();
+    const first = tabs.shadowRoot.querySelector('[data-id="tab1"]');
+    const firstRect = first.getBoundingClientRect();
+    first.focus();
+    await nextFrame();
+
+    window.tabsKeyboardVt = {
+      firstTabSide: firstRect.left - row.left < row.right - firstRect.right ? "left" : "right",
+      afterArrowLeft: await press("ArrowLeft"),
+      afterSecondArrowLeft: await press("ArrowLeft"),
+      afterArrowRight: await press("ArrowRight"),
+      afterEnd: await press("End"),
+      afterHome: await press("Home"),
+      afterFinalArrowLeft: await press("ArrowLeft"),
+    };
+    result.textContent = "DONE";
+    result.setAttribute("data-status", "complete");
+  });
+</script>

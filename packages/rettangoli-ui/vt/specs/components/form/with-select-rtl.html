@@ -1,0 +1,147 @@
+---
+title: "With Select - RTL"
+dir: rtl
+description: Verifies embedded form selects preserve options, selected defaults, and visible popover content.
+specs:
+  - 'Same content as `with-select.html`, rendered with `dir="rtl"` on the document.'
+  - Country select opens from inside `rtgl-form`.
+  - Open list still renders the seeded country options.
+  - Defaulted role select keeps the `viewer` selection.
+steps:
+  - action: select
+    testId: country-select-trigger
+    steps:
+      - action: click
+  - action: waitFor
+    selector: '#form rtgl-select[data-field-name="country"] rtgl-popover[open]'
+    state: attached
+    timeoutMs: 1200
+  - action: assert
+    type: text
+    selector: '#form rtgl-select[data-field-name="country"] #option0'
+    value: United States
+    match: includes
+  - action: assert
+    type: text
+    selector: '#form rtgl-select[data-field-name="role"] [data-testid="select-button"]'
+    value: Viewer
+    match: includes
+  - action: wait
+    ms: 120
+  - action: screenshot
+viewport:
+  id: form-compact
+  width: 700
+  height: 900
+---
+<rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
+</rtgl-view>
+
+<script>
+  const form = document.createElement('rtgl-form');
+  form.id = 'form';
+  form.setAttribute('w', '300');
+
+  form.defaultValues = {
+    role: 'viewer'
+  }
+
+  form.form = {
+    title: 'User Registration',
+    description: 'Please fill out the form below',
+    fields: [{
+      name: 'email',
+      type: 'input-text',
+      label: 'Email',
+      description: 'Enter your email address',
+      placeholder: 'user@example.com',
+      required: true,
+    }, {
+      name: 'password',
+      type: 'input-text',
+      label: 'Password',
+      inputType: 'password',
+      description: 'Choose a strong password',
+      placeholder: 'Enter password',
+      required: true,
+    }, {
+      name: 'country',
+      type: 'select',
+      label: 'Country',
+      description: 'Select your country',
+      placeholder: 'Choose a country',
+      required: true,
+      options: [
+        { label: 'United States', value: 'us' },
+        { label: 'Canada', value: 'ca' },
+        { label: 'United Kingdom', value: 'uk' },
+        { label: 'Australia', value: 'au' },
+        { label: 'Germany', value: 'de' },
+        { label: 'France', value: 'fr' },
+        { label: 'Japan', value: 'jp' },
+      ],
+    }, {
+      name: 'role',
+      type: 'select',
+      label: 'Role',
+      description: 'Select your role',
+      placeholder: 'Select role',
+      required: true,
+      clearable: false,
+      options: [
+        { label: 'Administrator', value: 'admin' },
+        { label: 'Editor', value: 'editor' },
+        { label: 'Viewer', value: 'viewer' },
+      ]
+    }, {
+      name: 'anchor',
+      type: 'select',
+      label: 'Anchor',
+      description: 'This is an anchor field',
+      placeholder: 'Click here',
+      required: false,
+      options: [{
+        label: 'Top Left', value: '0,0',
+      }, {
+        label: 'Top Right', value: '1,0',
+      }, {
+        label: 'Bottom Left', value: '0,1',
+      }, {
+        label: 'Bottom Right', value: '1,1',
+      }],
+    }],
+    actions: {
+      buttons: [{
+        id: 'submit',
+        variant: 'pr',
+        label: 'Submit',
+      }, {
+        id: 'cancel',
+        variant: 'se',
+        label: 'Cancel',
+      }],
+    }
+  }
+
+  form.addEventListener('form-action', (e) => {
+    console.log('form-action', e.detail);
+  });
+
+  form.addEventListener('form-change', (e) => {
+    console.log('form-change', e.detail);
+  });
+
+  document.getElementById('container').appendChild(form);
+
+  const tagFormSelect = () => {
+    const countrySelect = form.shadowRoot?.querySelector('rtgl-select[data-field-name="country"]');
+    const countryTrigger = countrySelect?.shadowRoot?.querySelector('[data-testid="select-button"]');
+    if (countryTrigger) {
+      countryTrigger.setAttribute('data-testid', 'country-select-trigger');
+      return;
+    }
+    setTimeout(tagFormSelect, 0);
+  };
+
+  tagFormSelect();
+</script>

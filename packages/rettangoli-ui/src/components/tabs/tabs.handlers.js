@@ -1,3 +1,4 @@
+import { getInlineArrowKeys } from "../../common/direction.js";
 import { subscribeUiMessages } from "../../common/uiMessages.js";
 
 export const handleBeforeMount = (deps) => {
@@ -35,8 +36,9 @@ export const handleKeyDown = (deps, payload) => {
   const tabs = Array.from(event.currentTarget.parentElement.querySelectorAll('[role="tab"]'));
   const index = tabs.indexOf(event.currentTarget);
   let next;
-  if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
-  if (event.key === "ArrowLeft") next = (index - 1 + tabs.length) % tabs.length;
+  const keys = getInlineArrowKeys(event.currentTarget);
+  if (event.key === keys.next) next = (index + 1) % tabs.length;
+  if (event.key === keys.previous) next = (index - 1 + tabs.length) % tabs.length;
   if (event.key === "Home") next = 0;
   if (event.key === "End") next = tabs.length - 1;
   if (next === undefined || !tabs[next]) return;

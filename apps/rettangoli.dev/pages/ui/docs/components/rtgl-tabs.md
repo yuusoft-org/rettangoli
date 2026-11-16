@@ -91,3 +91,4 @@ the shared overlay scrollbar, keeping every tab reachable without wrapping label
 - Component emits selection intent; parent/app updates selected tab.
 - `s` can be changed after mount. Omitted or unsupported sizes use `md`.
 - Changing size preserves `selected-tab` and does not emit `item-click`.
+- Under `dir="rtl"` the first tab sits on the right, and ArrowLeft moves focus to the next tab.

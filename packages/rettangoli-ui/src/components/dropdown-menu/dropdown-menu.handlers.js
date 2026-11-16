@@ -1,3 +1,4 @@
+import { getDirection as getElementDirection } from "../../common/direction.js";
 import { subscribeUiMessages } from "../../common/uiMessages.js";
 import {
   calculateSubmenuPosition,
@@ -200,14 +201,7 @@ const getFocusableIndices = (items) => {
   return indices;
 };
 
-const getDirection = (deps) => {
-  const element = deps?.refs?.popover;
-  if (element && typeof getComputedStyle === "function") {
-    return getComputedStyle(element).direction === "rtl" ? "rtl" : "ltr";
-  }
-
-  return "ltr";
-};
+const getDirection = (deps) => getElementDirection(deps?.refs?.popover);
 
 const isPointInRect = (point, rect) => {
   return !!rect

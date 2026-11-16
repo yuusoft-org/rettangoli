@@ -1,0 +1,13 @@
+---
+title: Color Picker - Basic - Default Input - RTL
+dir: rtl
+description: Verifies baseline color picker rendering with default value handling.
+specs:
+  - 'Same content as `colorPicker-basic-01.html`, rendered with `dir="rtl"` on the document.'
+  - Color picker renders its trigger swatch surface.
+  - Default value state is visible without explicit value prop.
+  - Baseline control geometry remains stable in layout.
+---
+<rtgl-view g="lg" p="lg" wh="f" wrap>
+  <rtgl-color-picker></rtgl-color-picker>
+</rtgl-view>
