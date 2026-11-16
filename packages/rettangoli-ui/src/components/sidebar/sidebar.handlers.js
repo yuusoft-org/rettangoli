@@ -1,3 +1,4 @@
+import { getInlineEdge } from "../../common/direction.js";
 const parseBooleanProp = (value) => {
   if (value === true) {
     return true;
@@ -85,7 +86,7 @@ export const handleItemMouseEnter = (deps, payload) => {
   }
 
   store.showTooltip({
-    x: rect.right,
+    x: getInlineEdge(rect, "end", event.currentTarget),
     y: rect.top + rect.height / 2,
     place: 'r',
     content,

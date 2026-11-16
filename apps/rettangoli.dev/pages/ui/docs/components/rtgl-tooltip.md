@@ -50,6 +50,7 @@ A lightweight floating hint component for short contextual help.
 - Controlled by `open`.
 - Uses explicit `x`/`y` positioning.
 - `place` controls orientation relative to anchor point.
+- `place` follows the reading direction: under `dir="rtl"`, `place="r"` opens to the left of the anchor. See [Right-to-Left](/ui/docs/introduction/right-to-left).
 - `s` controls tooltip padding, text scale, and max width presets.
 - Opens in the browser top layer, so it paints above open dialogs and popovers
   wherever it sits in the DOM, and is not clipped by transformed or

@@ -78,7 +78,8 @@ steps:
       const buttonHeldNearDialogTop =
         buttonRect.top >= dialogRect.top + 40 &&
         buttonRect.top <= dialogRect.top + 64;
-      const buttonAlignedRight = Math.abs(buttonRect.right - (slotRect.right - 8)) <= 3;
+      // Under RTL the close button sits at the top left of the surface.
+      const buttonAlignedRight = Math.abs(buttonRect.left - (slotRect.left + 8)) <= 3;
       const pass =
         scrollsNatively &&
         buttonVisible &&

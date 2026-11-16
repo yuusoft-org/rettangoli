@@ -537,6 +537,14 @@ Accept intended baselines:
 bun run vt:accept
 ```
 
+Right-to-left rules for source changes:
+
+- Component styles use logical properties so they mirror under `dir="rtl"`: `margin-inline-start`, `padding-inline-end`, `border-inline-start`, `inset-inline-end`, `text-align: start`. `spec/logicalProperties.spec.js` fails on a physical `margin-left`, `padding-right`, `border-left`, `text-align: left` or `float` in `src`; add an entry to its allow list, with the reason, only when a style must stay physical.
+- Use `:dir(rtl)` for a rule that differs under right to left, such as mirroring a directional icon.
+- In JavaScript, read direction with `src/common/direction.js` (`isRtl`, `getInlineArrowKeys`, `getInlineEdge`) at the moment it is needed. Do not cache it: `dir` can change at runtime.
+- Anchor a popover at the start or end edge of its trigger with `getInlineEdge`, not at `rect.left` or `rect.right`.
+- User docs: `apps/rettangoli.dev/pages/ui/docs/introduction/right-to-left.md`.
+
 Right-to-left specs:
 
 - Add `dir: rtl` to a spec's frontmatter to render its page with `dir="rtl"` on `<html>`. `vt/templates/default.html` reads the key; specs without it are unchanged.

@@ -11,8 +11,8 @@ const styles = {
   s: {
     sm: `
     height: 24px;
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-inline-start: 12px;
+    padding-inline-end: 12px;
     border-radius: 4px;
     font-size: var(--xs-font-size);
     font-weight: var(--xs-font-weight);
@@ -22,8 +22,8 @@ const styles = {
     `,
     md: `
     height: 32px;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-inline-start: 16px;
+    padding-inline-end: 16px;
     border-radius: 4px;
     font-size: var(--sm-font-size);
     font-weight: var(--sm-font-weight);
@@ -33,8 +33,8 @@ const styles = {
     `,
     lg: `
     height: 40px;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-inline-start: 20px;
+    padding-inline-end: 20px;
     border-radius: 4px;
     font-size: var(--md-font-size);
     font-weight: var(--md-font-weight);

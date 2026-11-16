@@ -107,6 +107,7 @@ Control initial field content with `value` and guidance text with `placeholder`.
 - `value` sets the current input text.
 - Removing `value` clears the field.
 - Removing `placeholder` removes placeholder text.
+- A text or password field takes its direction from its value: right-to-left text reads right to left on any page. An empty field follows the page direction.
 
 ```html codePreview
 <rtgl-view g="md" w="320">

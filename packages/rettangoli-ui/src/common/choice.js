@@ -1,3 +1,4 @@
+import { getInlineEdge } from "./direction.js";
 // Helpers shared by the choice controls: rtgl-select, rtgl-tag-select,
 // rtgl-segmented-control, rtgl-dropdown-menu and the global-ui dropdown.
 
@@ -70,7 +71,7 @@ export const resolvePopoverPosition = (trigger) => {
 
   const rect = trigger.getBoundingClientRect();
   return {
-    x: Math.round(rect.left),
+    x: Math.round(getInlineEdge(rect, "start", trigger)),
     y: Math.round(rect.bottom + 12),
     w: Math.max(Math.round(rect.width), 240),
   };

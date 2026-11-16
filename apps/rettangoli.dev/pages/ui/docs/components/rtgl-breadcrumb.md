@@ -70,6 +70,7 @@ A path-navigation component for hierarchical context and route navigation.
 - `current` and `disabled` disable interaction.
 - `id` is identity only and does not control clickability.
 - `max` collapses middle items with an ellipsis.
+- Under `dir="rtl"` the trail runs right to left and the separator icon is mirrored, so it points toward the next item.
 - Separators are inserted automatically between visible items.
 - Breadcrumbs have no built-in outer padding; the surrounding layout owns their inset.
 - If `newTab` is true and `rel` is omitted, `rel="noopener noreferrer"` is applied.

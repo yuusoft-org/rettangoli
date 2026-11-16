@@ -14,6 +14,9 @@ class RettangoliInputDurationElement extends BaseInputElement {
     super();
     this._lastValidValueMs = null;
     this._lastCommittedValueMs = null;
+    // Durations always read left to right, like numbers.
+    this._fixedTextDirection = "ltr";
+    this._syncTextDirection();
     this._inputElement.addEventListener("keydown", this._onDurationKeyDown);
   }
 

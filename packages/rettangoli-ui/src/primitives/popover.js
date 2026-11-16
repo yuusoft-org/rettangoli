@@ -583,7 +583,25 @@ class RettangoliPopoverElement extends HTMLElement {
     }
   }
 
+  // An open popover is repositioned when the document direction changes,
+  // for example on a locale switch.
+  _startDirectionObserver() {
+    if (this._directionObserver || typeof MutationObserver !== "function") {
+      return;
+    }
+
+    this._directionObserver = new MutationObserver(() => {
+      this._schedulePositionUpdate();
+    });
+    this._directionObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["dir"],
+    });
+  }
+
   _startResizeObserver() {
+    this._startDirectionObserver();
+
     if (!this._resizeObserver) {
       return;
     }
@@ -604,6 +622,8 @@ class RettangoliPopoverElement extends HTMLElement {
   }
 
   _stopResizeObserver() {
+    this._directionObserver?.disconnect();
+    this._directionObserver = null;
     this._resizeObserver?.disconnect();
     this._isObservingResize = false;
     this._observedContentWrapper = null;
@@ -701,6 +721,7 @@ class RettangoliPopoverElement extends HTMLElement {
       place,
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,
+      direction: getComputedStyle(this).direction,
     });
   }
 

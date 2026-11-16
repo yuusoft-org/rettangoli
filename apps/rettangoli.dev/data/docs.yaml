@@ -20,6 +20,9 @@ items:
       - id: responsiveness
         title: "Responsiveness"
         href: "/ui/docs/introduction/responsiveness"
+      - id: right-to-left
+        title: "Right-to-Left"
+        href: "/ui/docs/introduction/right-to-left"
   - title: "Primitives"
     type: groupLabel
     items:

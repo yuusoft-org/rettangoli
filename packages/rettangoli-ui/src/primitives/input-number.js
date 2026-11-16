@@ -25,6 +25,11 @@ class RettangoliInputNumberElement extends RettangoliInputBaseElement {
         :host {
           display: contents;
         }
+        /* A field pinned to left-to-right content still lines up with the
+           start edge of a right-to-left page. */
+        :host(:dir(rtl)) input[dir="ltr"] {
+          text-align: right;
+        }
         input {
           box-sizing: border-box;
           background-color: var(--background);
@@ -34,8 +39,8 @@ class RettangoliInputNumberElement extends RettangoliInputBaseElement {
           letter-spacing: var(--sm-letter-spacing);
           border: 1px solid var(--ring);
           border-radius: var(--border-radius-lg);
-          padding-left: var(--spacing-md);
-          padding-right: var(--spacing-md);
+          padding-inline-start: var(--spacing-md);
+          padding-inline-end: var(--spacing-md);
           height: 32px;
           color: var(--foreground);
           outline: none;
@@ -45,8 +50,8 @@ class RettangoliInputNumberElement extends RettangoliInputBaseElement {
           font-weight: var(--xs-font-weight);
           line-height: var(--xs-line-height);
           letter-spacing: var(--xs-letter-spacing);
-          padding-left: var(--spacing-md);
-          padding-right: var(--spacing-md);
+          padding-inline-start: var(--spacing-md);
+          padding-inline-end: var(--spacing-md);
           height: 24px;
         }
         input:focus {
@@ -78,6 +83,8 @@ class RettangoliInputNumberElement extends RettangoliInputBaseElement {
 
     // Create initial DOM structure
     this._inputElement = document.createElement('input');
+    // Numbers always read left to right, so a minus sign stays in front.
+    this._inputElement.dir = "ltr";
     this._styleElement = document.createElement('style');
 
     this.shadowRoot.appendChild(this._styleElement);

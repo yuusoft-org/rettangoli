@@ -2,10 +2,10 @@
 title: Dialog - Close Button - RTL
 dir: rtl
 diffThreshold: 4
-description: Verifies the built-in top-right close button renders and emits close requests.
+description: Verifies the built-in close button renders at the top left under RTL and emits close requests.
 specs:
   - 'Same content as `close-button.html`, rendered with `dir="rtl"` on the document.'
-  - "`close-button` renders an opt-in top-right X icon button."
+  - "`close-button` renders an opt-in X icon button at the inline-end corner, which is the top left under RTL."
   - "The close button is absolute overlay chrome and does not change content padding."
   - "The close button has no visible border in its resting state."
   - "The close button has no visible text label."
@@ -67,7 +67,8 @@ steps:
       buttonRect.width === 32 &&
       buttonRect.height === 32;
     const positionedTop = Math.abs(buttonRect.top - (slotRect.top + 8)) <= 3;
-    const positionedRight = Math.abs(buttonRect.right - (slotRect.right - 8)) <= 3;
+    // Under RTL the close button sits at the top left of the surface.
+    const positionedRight = Math.abs(buttonRect.left - (slotRect.left + 8)) <= 3;
     const iconOnly = closeButton.textContent.trim() === "";
     const labelledForA11y = closeButton.getAttribute("aria-label") === "Close dialog";
     const absoluteOverlay = closeButtonStyle.position === "absolute";

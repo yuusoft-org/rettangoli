@@ -1,3 +1,4 @@
+import { isRtl } from "../common/direction.js";
 import { getUiMessage, subscribeUiMessages } from "../common/uiMessages.js";
 import {
   css,
@@ -171,8 +172,8 @@ class RettangoliDialogElement extends HTMLElement {
             var(--rtgl-dialog-padding-horizontal);
           border: 1px solid var(--border);
           border-radius: var(--border-radius-md);
-          margin-left: var(--spacing-lg);
-          margin-right: var(--spacing-lg);
+          margin-inline-start: var(--spacing-lg);
+          margin-inline-end: var(--spacing-lg);
           width: fit-content;
           max-width: calc(100vw - 2 * var(--spacing-lg));
           /* Default margins will be set dynamically via JavaScript for adaptive centering */
@@ -276,8 +277,8 @@ class RettangoliDialogElement extends HTMLElement {
           width: 100dvw;
           max-width: 100vw;
           max-width: 100dvw;
-          margin-left: 0;
-          margin-right: 0;
+          margin-inline-start: 0;
+          margin-inline-end: 0;
         }
 
         ${mediaQueries.md} {
@@ -330,8 +331,8 @@ class RettangoliDialogElement extends HTMLElement {
         ${dialogPaddingStyles}
 
         :host([p="none"]) slot[name="content"] {
-          margin-left: 0;
-          margin-right: 0;
+          margin-inline-start: 0;
+          margin-inline-end: 0;
           max-width: 100vw;
           max-width: 100dvw;
         }
@@ -345,8 +346,8 @@ class RettangoliDialogElement extends HTMLElement {
           background-color: transparent !important;
           border: none;
           border-radius: 0;
-          margin-left: 0;
-          margin-right: 0;
+          margin-inline-start: 0;
+          margin-inline-end: 0;
           max-width: 100vw;
           max-width: 100dvw;
           padding: 0;
@@ -1149,13 +1150,14 @@ class RettangoliDialogElement extends HTMLElement {
         scrollTop +
         CLOSE_BUTTON_OFFSET_PX,
     );
+    // The close button sits at the inline-end corner of the dialog surface:
+    // top right under LTR, top left under RTL.
+    const slotLeft = Math.round(this._slotElement.offsetLeft) + scrollLeft;
     const left = Math.max(
       0,
-      Math.round(this._slotElement.offsetLeft) +
-        scrollLeft +
-        slotWidth -
-        CLOSE_BUTTON_SIZE_PX -
-        CLOSE_BUTTON_OFFSET_PX,
+      isRtl(this._dialogElement)
+        ? slotLeft + CLOSE_BUTTON_OFFSET_PX
+        : slotLeft + slotWidth - CLOSE_BUTTON_SIZE_PX - CLOSE_BUTTON_OFFSET_PX,
     );
 
     this._dialogElement.style.setProperty(

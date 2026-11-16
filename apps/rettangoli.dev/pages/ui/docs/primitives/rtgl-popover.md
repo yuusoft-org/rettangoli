@@ -115,6 +115,8 @@ Choose where the surface appears relative to the `x`/`y` anchor.
 - `b`, `bs`, `be`
 - `l`, `ls`, `le`
 
+`l`, `r`, `s` and `e` follow the reading direction. Under `dir="rtl"` the `r` placements open to the left of the anchor, the `l` placements to the right, and `ts`/`bs` extend left from the anchor. An open popover moves when `dir` changes on `<html>`. See [Right-to-Left](/ui/docs/introduction/right-to-left).
+
 ```html codePreview
 <rtgl-view d="h" g="md">
   <rtgl-popover open x="120" y="120" place="t">

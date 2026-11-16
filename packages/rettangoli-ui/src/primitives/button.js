@@ -34,8 +34,8 @@ class RettangoliButtonElement extends HTMLElement {
           border-color: var(--border);
           padding: 0px;
           height: 32px;
-          padding-left: 16px;
-          padding-right: 16px;
+          padding-inline-start: 16px;
+          padding-inline-end: 16px;
           border-radius: 4px;
 
           font-size: var(--sm-font-size);
@@ -63,8 +63,8 @@ class RettangoliButtonElement extends HTMLElement {
           border-style: solid;
           border-color: var(--border);
           height: 32px;
-          padding-left: 16px;
-          padding-right: 16px;
+          padding-inline-start: 16px;
+          padding-inline-end: 16px;
           border-radius: 4px;
           font-size: var(--sm-font-size);
           font-weight: var(--sm-font-weight);
@@ -139,8 +139,8 @@ class RettangoliButtonElement extends HTMLElement {
            so the zero padding wins. */
         :host([sq]) .surface {
           aspect-ratio: 1;
-          padding-left: 0;
-          padding-right: 0;
+          padding-inline-start: 0;
+          padding-inline-end: 0;
           gap: 0;
         }
       `);

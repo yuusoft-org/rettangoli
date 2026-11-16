@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Right-to-left support
+
+- Every primitive and component now mirrors under `dir="rtl"`. Set `dir="rtl"` on `<html>`, or change it at runtime, and layout, popover placement and keyboard navigation follow. Pages without `dir`, and pages with `dir="ltr"`, render exactly as before.
+- `l` and `r` in attributes now mean the start and end of the reading direction. `ml`, `mr`, `mh`, `pl`, `pr`, `ph`, `bwl` and `bwr` map to logical CSS properties (`margin-inline-start` and so on), and `edge="l"`/`edge="r"` to `inset-inline-start`/`inset-inline-end`. Under left to right nothing changes. Under `dir="rtl"`, `ml` now applies to the right side; before, it stayed on the left. Wrap a subtree in `dir="ltr"` to keep its physical sides.
+- `rtgl-popover` and `rtgl-tooltip`: `place` follows the reading direction. Under `dir="rtl"`, `r`/`rs`/`re` open to the left of the anchor, `l`/`ls`/`le` to the right, `ts`/`bs` extend left from the anchor and `te`/`be` extend right. An open popover is repositioned when `dir` changes on `<html>`. `rtgl-select`, `rtgl-popover-input`, `rtgl-color-picker`, `rtgl-sidebar` tooltips and the `position` of the `rtgl-form` `form-section-action` event anchor at the start or end edge of their trigger instead of its left or right edge.
+- `rtgl-tabs` and `rtgl-carousel`: arrow keys follow the visual order under `dir="rtl"`, so ArrowLeft moves to the next tab or slide. `rtgl-dropdown-menu` already did this.
+- `rtgl-carousel`: works under `dir="rtl"`. Before, navigation changed `index` but the viewport did not move. The navigation buttons swap sides and their icons are mirrored.
+- `rtgl-dialog`: the `close-button` sits at the top left under `dir="rtl"`.
+- `rtgl-breadcrumb`: the separator icon is mirrored under `dir="rtl"`.
+- `rtgl-input` and `rtgl-textarea`: behavior change: a text or password field with a value takes its direction from that value, so Hebrew or Arabic text typed on a left-to-right page now reads right to left and is right aligned; before, it was left aligned. An empty field follows the page direction. Date and time fields follow the page direction.
+- `rtgl-input-number` and `rtgl-input-duration`: the value always reads left to right, and lines up with the right edge of the field under `dir="rtl"`.
+- `rtgl-table` headers and the list, blockquote and table styles in `base.css` use the start side instead of the left side.
+
 ### Improvements
 
 - `rtgl-form`: `reset({ defaultValues })` replaces the form's defaults with the given object and resets to them in one step, leaving the form as a fresh mount with that `defaultValues` would: values, conditional fields, errors, and reactive validation. It replaces changing `key` together with `defaultValues`, and `reset()` followed by `setValues()`, for loading new values into a mounted form. A later `reset()` returns to the new defaults, which stay in place, instead of the `defaultValues` property, until the next `reset({ defaultValues })`, a `key` change, or a remount. The form keeps a copy of the object. A `defaultValues` that is not a plain object, such as `null`, an array, a `Date`, or a class instance, throws. `reset()` without `defaultValues`, including `reset({ defaultValues: undefined })`, is unchanged and still reads the `defaultValues` property at the call; `reset({ defaultValues: {} })` resets every field to its empty value.

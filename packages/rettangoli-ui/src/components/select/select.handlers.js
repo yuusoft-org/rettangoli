@@ -1,3 +1,4 @@
+import { isRtl } from "../../common/direction.js";
 import { subscribeUiMessages } from "../../common/uiMessages.js";
 import { deepEqual } from '../../common.js';
 import { hasFieldAriaChanged } from '../../accessibility/field.js';
@@ -135,7 +136,8 @@ export const handleButtonClick = (deps, payload) => {
   store.openOptionsPopover({
     position: {
       y: rect.bottom + 12,  // Bottom edge of button
-      x: rect.left - 24,    // Left edge of button
+      // Inline-start edge of the button: left under LTR, right under RTL.
+      x: isRtl(button) ? rect.right + 24 : rect.left - 24,
     },
     selectedIndex
   })

@@ -81,6 +81,7 @@ Control content with `value` and guidance text with `placeholder`.
 - `value` sets the current textarea content.
 - Removing `value` clears content.
 - Removing `placeholder` removes placeholder text.
+- The field takes its direction from its value: right-to-left text reads right to left on any page. An empty field follows the page direction.
 
 ```html codePreview
 <rtgl-view d="v" g="md" w="360">

@@ -1,5 +1,11 @@
+/**
+ * `s`/`e` and `l`/`r` in `place` are the start and end of the reading
+ * direction. With `direction: "rtl"` the horizontal placement is mirrored
+ * around the anchor point: `r*` opens to the physical left and `ts`/`bs`
+ * extend to the left of the anchor.
+ */
 export const calculatePopoverPosition = ({
-  x,
+  x: anchorX,
   y,
   width,
   height,
@@ -8,7 +14,11 @@ export const calculatePopoverPosition = ({
   viewportHeight,
   offset = 8,
   padding = 8,
+  direction = "ltr",
 }) => {
+  const isRtl = String(direction).toLowerCase() === "rtl";
+  // Solve in a mirrored viewport for RTL, then mirror the result back.
+  const x = isRtl ? viewportWidth - anchorX : anchorX;
   let left = x;
   let top = y;
 
@@ -72,8 +82,10 @@ export const calculatePopoverPosition = ({
       break;
   }
 
+  const clampedLeft = Math.max(padding, Math.min(left, viewportWidth - width - padding));
+
   return {
-    left: Math.max(padding, Math.min(left, viewportWidth - width - padding)),
+    left: isRtl ? viewportWidth - clampedLeft - width : clampedLeft,
     top: Math.max(padding, Math.min(top, viewportHeight - height - padding)),
   };
 };

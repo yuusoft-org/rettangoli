@@ -1,4 +1,5 @@
 import { getUiMessage, subscribeUiMessages } from "../common/uiMessages.js";
+import { getInlineArrowKeys, isRtl } from "../common/direction.js";
 import { css, dimensionWithUnit } from "../common.js";
 import {
   clampCarouselIndex,
@@ -171,12 +172,12 @@ class RettangoliCarouselElement extends HTMLElement {
         }
 
         #prev-button {
-          left: var(--spacing-sm);
+          inset-inline-start: var(--spacing-sm);
           transform: translateY(-50%);
         }
 
         #next-button {
-          right: var(--spacing-sm);
+          inset-inline-end: var(--spacing-sm);
           transform: translateY(-50%);
         }
 
@@ -185,6 +186,11 @@ class RettangoliCarouselElement extends HTMLElement {
           width: 18px;
           height: 18px;
           pointer-events: none;
+        }
+
+        #prev-button:dir(rtl) svg,
+        #next-button:dir(rtl) svg {
+          transform: scaleX(-1);
         }
 
         #pager {
@@ -538,10 +544,11 @@ class RettangoliCarouselElement extends HTMLElement {
   }
 
   _handleViewportKeydown(event) {
-    if (event.key === "ArrowRight") {
+    const keys = getInlineArrowKeys(this._viewportElement);
+    if (event.key === keys.next) {
       event.preventDefault();
       this.next();
-    } else if (event.key === "ArrowLeft") {
+    } else if (event.key === keys.previous) {
       event.preventDefault();
       this.prev();
     }
@@ -668,7 +675,7 @@ class RettangoliCarouselElement extends HTMLElement {
       return 0;
     }
 
-    const currentScrollLeft = this._viewportElement.scrollLeft;
+    const currentScrollLeft = this._getScrollOffset();
 
     let nearestIndex = this._currentIndex;
     let nearestDistance = Number.POSITIVE_INFINITY;
@@ -788,6 +795,20 @@ class RettangoliCarouselElement extends HTMLElement {
     this._viewportElement.style.scrollBehavior = "";
   }
 
+  // Scroll offsets in this class are measured from the inline-start edge and
+  // are never negative. Under RTL the browser reports `scrollLeft` from 0 down
+  // to a negative minimum, so these two helpers convert.
+  _getScrollOffset() {
+    const scrollLeft = this._viewportElement.scrollLeft;
+    return isRtl(this._viewportElement) ? -scrollLeft : scrollLeft;
+  }
+
+  _setScrollOffset(scrollOffset) {
+    this._viewportElement.scrollLeft = isRtl(this._viewportElement)
+      ? -scrollOffset
+      : scrollOffset;
+  }
+
   _scrollViewportTo(targetScrollLeft, options = {}) {
     const behavior = options.behavior ?? "smooth";
     const clampedTargetScrollLeft = Math.min(
@@ -800,16 +821,16 @@ class RettangoliCarouselElement extends HTMLElement {
 
     if (
       behavior !== "smooth" ||
-      Math.abs(clampedTargetScrollLeft - this._viewportElement.scrollLeft) < 1
+      Math.abs(clampedTargetScrollLeft - this._getScrollOffset()) < 1
     ) {
       this._cancelScrollAnimation();
-      this._viewportElement.scrollLeft = clampedTargetScrollLeft;
+      this._setScrollOffset(clampedTargetScrollLeft);
       return;
     }
 
     this._cancelScrollAnimation();
 
-    const startScrollLeft = this._viewportElement.scrollLeft;
+    const startScrollLeft = this._getScrollOffset();
     const deltaScrollLeft = clampedTargetScrollLeft - startScrollLeft;
     const animationDurationMs = Math.min(
       720,
@@ -824,15 +845,16 @@ class RettangoliCarouselElement extends HTMLElement {
       const progress = Math.min(elapsedMs / animationDurationMs, 1);
       const easedProgress = easeInOutQuad(progress);
 
-      this._viewportElement.scrollLeft =
-        startScrollLeft + (deltaScrollLeft * easedProgress);
+      this._setScrollOffset(
+        startScrollLeft + (deltaScrollLeft * easedProgress),
+      );
 
       if (progress < 1) {
         this._scrollAnimationFrame = requestAnimationFrame(step);
         return;
       }
 
-      this._viewportElement.scrollLeft = clampedTargetScrollLeft;
+      this._setScrollOffset(clampedTargetScrollLeft);
       this._scrollAnimationFrame = null;
       this._setAnimatingScrollState(false);
     };
@@ -958,13 +980,16 @@ class RettangoliCarouselElement extends HTMLElement {
     const slideRect = slide.getBoundingClientRect();
 
     if (viewportRect.width <= 0 || slideRect.width <= 0) {
-      return this._viewportElement.scrollLeft;
+      return this._getScrollOffset();
     }
 
     const viewportStyles = getComputedStyle(this._viewportElement);
-    const currentScrollLeft = this._viewportElement.scrollLeft;
-    const slideLeft =
-      (slideRect.left - viewportRect.left) + currentScrollLeft;
+    // Distance from the inline-start edge of the scrollable content to the
+    // inline-start edge of the slide.
+    const currentScrollLeft = this._getScrollOffset();
+    const slideLeft = isRtl(this._viewportElement)
+      ? (viewportRect.right - slideRect.right) + currentScrollLeft
+      : (slideRect.left - viewportRect.left) + currentScrollLeft;
 
     return resolveCarouselScrollLeft({
       slideLeft,

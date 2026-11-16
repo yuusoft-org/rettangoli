@@ -106,6 +106,7 @@ Control current numeric content with `value`.
 - If `value` is empty, events emit `null`.
 - Non-numeric `value` is treated as empty.
 - Removing `value` clears the field.
+- The value always reads left to right. Under `dir="rtl"` it lines up with the right edge of the field.
 
 ```html codePreview
 <rtgl-view g="md" w="320">
