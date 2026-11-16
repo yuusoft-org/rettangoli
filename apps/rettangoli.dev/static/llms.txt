@@ -28,6 +28,7 @@ This file is a curated index for LLM-based tools. Prefer linked docs over guessi
 - https://rettangoli.dev/fe/docs/guides/constants.md
 - https://rettangoli.dev/fe/docs/guides/refs-and-events.md
 - https://rettangoli.dev/fe/docs/guides/component-architecture.md
+- https://rettangoli.dev/fe/docs/guides/testing.md
 - https://rettangoli.dev/fe/docs/guides/cli.md
 
 ## UI (Rettangoli UI)

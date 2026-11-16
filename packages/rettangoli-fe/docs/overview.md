@@ -96,6 +96,7 @@ Other components and application code reach a component through:
 - `constants.md`: optional constants contract
 - `i18n.md`: internationalization config, locale files, view usage, and locale switching
 - `prerender.md`: prerendering at build time, the first-render contract, hydration and registration order
+- `testing.md`: the `@rettangoli/fe/testing` entry for view, store, handler and component tests
 
 ## Contract Check
 
