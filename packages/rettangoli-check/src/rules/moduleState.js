@@ -34,10 +34,31 @@ const getStaticPropertyName = (memberNode) => {
   return typeof memberNode.property?.value === "string" ? memberNode.property.value : null;
 };
 
+const OBJECT_MUTATORS = new Set(["assign", "defineProperty", "defineProperties", "setPrototypeOf"]);
+
+// 'Object.assign(cache, ...)' and the like, with the reference as the first argument.
+const isObjectMutatorTarget = ({ node, ancestors }) => {
+  const call = ancestors[ancestors.length - 1];
+  if (call?.type !== "CallExpression" || call.arguments[0] !== node) {
+    return false;
+  }
+  const { callee } = call;
+  return (
+    callee?.type === "MemberExpression"
+    && callee.object?.type === "Identifier"
+    && callee.object.name === "Object"
+    && OBJECT_MUTATORS.has(getStaticPropertyName(callee))
+  );
+};
+
 // True when the reference is the root of a member chain that is written to
-// ('cache.a.b = 1', 'cache[k]++', 'delete cache[k]') or is the receiver of a mutating
-// method call ('cache.set(k, v)').
+// ('cache.a.b = 1', 'cache[k]++', 'delete cache[k]'), the root of the receiver of a mutating
+// method call ('cache.set(k, v)', 'cache.items.push(v)'), or the target of 'Object.assign'.
 const isMutation = ({ node, ancestors }) => {
+  if (isObjectMutatorTarget({ node, ancestors })) {
+    return true;
+  }
+
   let current = node;
   let index = ancestors.length - 1;
   let memberDepth = 0;
@@ -70,7 +91,6 @@ const isMutation = ({ node, ancestors }) => {
   if (parent.type === "CallExpression") {
     return (
       parent.callee === current
-      && memberDepth === 1
       && MUTATING_METHODS.has(getStaticPropertyName(lastMember))
     );
   }
@@ -97,6 +117,25 @@ const isWeakCollection = (binding) => {
   );
 };
 
+const MAX_ALIAS_HOPS = 5;
+
+// The binding a reference reaches through plain aliases ('const local = cache; local.set(...)').
+const resolveAliasedBinding = ({ binding, referenceByNode }) => {
+  let current = binding;
+  for (let hop = 0; current && hop < MAX_ALIAS_HOPS; hop += 1) {
+    const declarator = current.declaration?.declarations?.find(({ id }) => id === current.node);
+    if (current.kind !== "const" || declarator?.init?.type !== "Identifier") {
+      return current;
+    }
+    const target = referenceByNode.get(declarator.init)?.binding;
+    if (!target) {
+      return current;
+    }
+    current = target;
+  }
+  return current;
+};
+
 const FIX_HINT = "Keep per-instance values in the component's store state and change them through store actions; "
   + "pass long-lived collaborators in through deps from the setup file.";
 
@@ -116,15 +155,17 @@ export const runModuleStateRules = ({ models = [] }) => {
       }
 
       const mutatedConstants = new Set();
+      const referenceByNode = new Map(analysis.references.map((reference) => [reference.node, reference]));
       analysis.references.forEach((reference) => {
-        const { binding } = reference;
+        if (!reference.binding || !isInsideFunction(reference) || !isMutation(reference)) {
+          return;
+        }
+        const binding = resolveAliasedBinding({ binding: reference.binding, referenceByNode });
         if (
           binding?.isModuleScope
           && binding.kind === "const"
           && !mutatedConstants.has(binding)
           && !isWeakCollection(binding)
-          && isInsideFunction(reference)
-          && isMutation(reference)
         ) {
           mutatedConstants.add(binding);
         }

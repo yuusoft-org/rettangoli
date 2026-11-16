@@ -16,6 +16,12 @@ const PURE_GLOBALS = new Set([
 const TIME_HINT = "Read the time in a handler and pass it to the store action as payload.";
 const RANDOM_HINT = "Generate the random value in a handler and pass it to the store action as payload.";
 
+// 'value instanceof File' reads no state: it is a type test against a platform class.
+const isInstanceofTarget = ({ node, ancestors }) => {
+  const parent = ancestors[ancestors.length - 1];
+  return parent?.type === "BinaryExpression" && parent.operator === "instanceof" && parent.right === node;
+};
+
 // The impure use a free 'Math' or 'Date' reference is part of, if any.
 const describeImpureUse = ({ node, name, ancestors }) => {
   const parent = ancestors[ancestors.length - 1];
@@ -30,7 +36,7 @@ const describeImpureUse = ({ node, name, ancestors }) => {
     return { label: "Date()", hint: TIME_HINT };
   }
 
-  if (parent.type !== "MemberExpression" || parent.object !== node || parent.computed) {
+  if (parent.type !== "MemberExpression" || parent.object !== node) {
     return null;
   }
   // 'Math.random?.()' wraps the call in a ChainExpression; the callee is still the member.
@@ -38,7 +44,9 @@ const describeImpureUse = ({ node, name, ancestors }) => {
   if (call?.type !== "CallExpression" || call.callee !== parent) {
     return null;
   }
-  const method = parent.property?.name;
+  const method = parent.computed
+    ? (typeof parent.property?.value === "string" ? parent.property.value : undefined)
+    : parent.property?.name;
   if (name === "Math" && method === "random") {
     return { label: "Math.random()", hint: RANDOM_HINT };
   }
@@ -86,6 +94,9 @@ export const runStorePurityRules = ({ models = [] }) => {
       .forEach((reference) => {
         const { name, node } = reference;
         if (!PURE_GLOBALS.has(name)) {
+          if (name === "arguments" || isInstanceofTarget(reference)) {
+            return;
+          }
           report({
             key: `global:${name}`,
             node,

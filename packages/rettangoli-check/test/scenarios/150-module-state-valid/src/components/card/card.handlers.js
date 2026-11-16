@@ -48,6 +48,16 @@ export const handleCollect = (deps, items = []) => {
   }
 };
 
+const GROUPS = { open: ["a"] };
+
+export const handleMerge = (deps, payload = {}) => {
+  const merged = Object.assign({}, LABELS, payload);
+  const copy = ORDER;
+  const local = [...copy];
+  local.push(GROUPS.open.slice().pop());
+  deps.store.select({ kind: merged.a, known: copy.includes("a") });
+};
+
 export const handleRead = (deps) => {
   return { size: cache.size, first: items[0], label: LABELS.a, count: ORDER.length };
 };

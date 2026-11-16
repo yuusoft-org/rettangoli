@@ -1,7 +1,7 @@
 export const createInitialState = () => ({
   id: crypto.randomUUID(),
-  createdAt: Date.now(),
-  seed: Math.random(),
+  createdAt: Date["now"](),
+  seed: Math["random"](),
   theme: localStorage.getItem("theme"),
   width: window.innerWidth,
 });

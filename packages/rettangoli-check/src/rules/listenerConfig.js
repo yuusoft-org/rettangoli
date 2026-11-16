@@ -7,6 +7,7 @@ import {
 import { collectInvalidRefKeys } from "./refs.js";
 import { isObjectRecord } from "../utils/object.js";
 import { getModelFilePath, getYamlPathLine } from "./shared.js";
+import { findClosestName } from "../utils/suggest.js";
 import { EVENT_OPTION_TYPES, collectEventConfigIssues } from "../core/fe-contracts.js";
 
 const KNOWN_LISTENER_OPTIONS = new Set([
@@ -144,6 +145,7 @@ export const runListenerConfigRules = ({ models = [], includeStyle = false }) =>
           return;
         }
 
+        const suggestion = findClosestName({ name: optionName, candidates: [...KNOWN_LISTENER_OPTIONS] });
         diagnostics.push({
           code: "RTGL-CHECK-LISTENER-008",
           severity: "error",
@@ -153,7 +155,7 @@ export const runListenerConfigRules = ({ models = [], includeStyle = false }) =>
             optionLines,
             preferredKeys: [optionName],
           }),
-          message: `${model.componentKey}: unknown listener option '${optionName}' for event '${eventType}' on ref '${refKey}'. Supported options: ${[...KNOWN_LISTENER_OPTIONS].join(", ")}. The runtime ignores unknown keys, so remove it.`,
+          message: `${model.componentKey}: unknown listener option '${optionName}' for event '${eventType}' on ref '${refKey}'. ${suggestion ? `Did you mean '${suggestion}'? ` : ""}Supported options: ${[...KNOWN_LISTENER_OPTIONS].join(", ")}. The runtime ignores unknown keys, so ${suggestion ? "rename or remove it" : "remove it"}.`,
         });
       });
 

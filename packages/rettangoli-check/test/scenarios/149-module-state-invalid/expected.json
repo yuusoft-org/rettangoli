@@ -8,10 +8,10 @@
   },
   "expected": {
     "ok": false,
-    "errorCount": 14,
+    "errorCount": 17,
     "warnCount": 0,
     "errorCodes": {
-      "RTGL-CHECK-MODULE-001": 14
+      "RTGL-CHECK-MODULE-001": 17
     },
     "warnCodes": {},
     "diagnostics": [
@@ -70,6 +70,27 @@
         "message": "components/card: module-scope 'nested' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
         "filePath": "src/components/card/card.handlers.js",
         "line": 9
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'groups' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 10
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'aliased' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 11
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'defaults' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 12
       },
       {
         "code": "RTGL-CHECK-MODULE-001",

@@ -7,6 +7,9 @@ const registry = {};
 const counters = { total: 0 };
 const flags = {};
 const nested = { a: {} };
+const groups = { open: [] };
+const aliased = new Set();
+const defaults = {};
 
 export const handleClick = (deps, payload = {}) => {
   clickCount += 1;
@@ -18,5 +21,9 @@ export const handleClick = (deps, payload = {}) => {
   counters.total++;
   delete flags[payload.id];
   nested.a.b = 1;
+  groups.open.push(payload.id);
+  const local = aliased;
+  local.add(payload.id);
+  Object.assign(defaults, payload);
   deps.render();
 };

@@ -63,6 +63,7 @@ export const setItems = ({ state }, { items, timestamp, _event }) => {
   state.updatedAt = new Date(timestamp).getTime();
   state.window.end = clamp(items.length, { max: LIMIT });
   state.fetch = _event?.detail?.fetch;
+  state.isFile = _event?.detail?.file instanceof File;
   state.localStorage = hoisted();
 };
 
