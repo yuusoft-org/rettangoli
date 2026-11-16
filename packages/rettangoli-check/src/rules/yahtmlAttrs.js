@@ -1,6 +1,7 @@
 import { toCamelCase, toKebabCase } from "../utils/case.js";
 import { isValidAttributeName } from "../core/fe-contracts.js";
 import { getRegistryLoadFailures } from "../core/registry.js";
+import { findClosestName } from "../utils/suggest.js";
 import { escapeRegExp, isConvertibleLegacyBinding, normalizeBindingName } from "./shared.js";
 
 const GENERIC_ALLOWED_ATTRS = new Set([
@@ -99,8 +100,60 @@ const isAllowedByContract = ({ attrName, contract }) => {
   );
 };
 
+// CSS-style long names people reach for, and the attribute that carries each one. A long form is
+// suggested only when the element supports that attribute.
+const LONG_FORM_ATTRS = new Map([
+  ["width", "w"],
+  ["height", "h"],
+  ["padding", "p"],
+  ["margin", "m"],
+  ["gap", "g"],
+  ["direction", "d"],
+  ["color", "c"],
+  ["background", "bgc"],
+  ["background-color", "bgc"],
+  ["border-radius", "br"],
+  ["border-width", "bw"],
+  ["border-color", "bc"],
+  ["opacity", "op"],
+  ["position", "pos"],
+  ["cursor", "cur"],
+  ["z-index", "z"],
+  ["variant", "v"],
+  ["size", "s"],
+]);
+
+const isProjectComponent = (contract) => {
+  return contract.source.has("project-schema")
+    && !contract.source.has("ui-primitives")
+    && !contract.source.has("ui-components");
+};
+
+const suggestAttr = ({ attrName, contract }) => {
+  const kebab = toKebabCase(attrName);
+  const shortForm = LONG_FORM_ATTRS.get(kebab);
+  if (shortForm && contract.attrs.has(shortForm)) {
+    return shortForm;
+  }
+  return findClosestName({ name: kebab, candidates: [...contract.attrs, ...contract.props] });
+};
+
+const describeUnsupportedAttrFix = ({ attrName, contract, layoutAttrs }) => {
+  if (isProjectComponent(contract)) {
+    if (layoutAttrs.has(attrName) || layoutAttrs.has(toKebabCase(attrName))) {
+      return ". Layout attributes on a component tag do nothing unless the component declares and reads them; size the component from its root element, or wrap the tag in an rtgl-view that takes the size.";
+    }
+    return `. Declare '${toCamelCase(attrName)}' in propsSchema in that component's .schema.yaml, or remove it.`;
+  }
+
+  const suggestion = suggestAttr({ attrName, contract });
+  return suggestion ? `; did you mean '${suggestion}'?` : ".";
+};
+
 export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
   const diagnostics = [];
+  const layoutAttrs = registry.get("rtgl-view")?.attrs ?? new Set();
+  const knownTagNames = [...registry.keys()];
   // A primitive that failed to load has only its static contract (REGISTRY-001); its
   // runtime-only attributes are unknown, so do not report them as unsupported.
   const failedTags = new Set(getRegistryLoadFailures(registry).map(({ tagName }) => tagName));
@@ -123,12 +176,13 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
 
       const contract = registry.get(tagName);
       if (!contract) {
+        const suggestedTag = findClosestName({ name: tagName, candidates: knownTagNames });
         diagnostics.push({
           code: "RTGL-CHECK-YAHTML-001",
           severity: "error",
           filePath,
           line,
-          message: `${model.componentKey}: unknown custom element '${tagName}' in view template.`,
+          message: `${model.componentKey}: unknown custom element '${tagName}' in view template. It is neither a @rettangoli/ui element nor a component in the checked directories${suggestedTag ? `; did you mean '${suggestedTag}'?` : "."}`,
         });
         return;
       }
@@ -210,7 +264,7 @@ export const runYahtmlAttrRules = ({ models = [], registry = new Map() }) => {
           column: diagnosticColumn,
           endLine: line,
           endColumn: diagnosticEndColumn,
-          message: `${model.componentKey}: unsupported attr/prop '${attrName}' on '${tagName}'.`,
+          message: `${model.componentKey}: unsupported attr/prop '${attrName}' on '${tagName}'${describeUnsupportedAttrFix({ attrName, contract, layoutAttrs })}`,
         });
       });
     });

@@ -153,7 +153,7 @@ export const runListenerConfigRules = ({ models = [], includeStyle = false }) =>
             optionLines,
             preferredKeys: [optionName],
           }),
-          message: `${model.componentKey}: unknown listener option '${optionName}' for event '${eventType}' on ref '${refKey}'.`,
+          message: `${model.componentKey}: unknown listener option '${optionName}' for event '${eventType}' on ref '${refKey}'. Supported options: ${[...KNOWN_LISTENER_OPTIONS].join(", ")}. The runtime ignores unknown keys, so remove it.`,
         });
       });
 

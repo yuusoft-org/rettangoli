@@ -95,6 +95,9 @@ recent fixes and the reporter contracts.
 - Cross-file symbols: listener handlers in `.handlers.js`, actions in `.store.js`, and `schema.methods` in
   `.methods.js`, including re-exports (`RTGL-CHECK-SYMBOL-*`), handler naming (`RTGL-CHECK-HANDLER-*`),
   lifecycle signatures (`RTGL-CHECK-LIFECYCLE-*`) and method payloads (`RTGL-CHECK-METHOD-*`).
+- Module-scope mutable state in `.handlers.js`, `.store.js` and `.methods.js`, which every instance of the
+  component would share (`RTGL-CHECK-MODULE-001`), and impure globals or time and random calls in `.store.js`
+  (`RTGL-CHECK-STORE-001`).
 - Component compatibility: missing required props and boolean or prop bindings of the wrong type
   (`RTGL-CHECK-COMPAT-001`, `003`, `004`).
 - Input problems: unreadable files (`RTGL-CHECK-READ-001`), YAML that does not parse

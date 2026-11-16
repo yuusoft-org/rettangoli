@@ -127,6 +127,11 @@
       "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
     },
     {
+      "id": "RTGL-SPEC-FE-013",
+      "title": "Module-scope state and store purity",
+      "file": "packages/rettangoli-check/docs/language-spec/fe-contract-semantic-spec.md"
+    },
+    {
       "id": "RTGL-SPEC-SYMBOL-001",
       "title": "Canonical source sets",
       "file": "packages/rettangoli-check/docs/language-spec/symbol-resolution-order.md"

@@ -1,0 +1,89 @@
+{
+  "name": "unknown element and unsupported attr diagnostics name the fix",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 9,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-YAHTML-001": 3,
+      "RTGL-CHECK-YAHTML-003": 6
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/host: unsupported attr/prop 'width' on 'rtgl-view'; did you mean 'w'?",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/host: unsupported attr/prop 'w' on 'rtgl-test-fix-hints-panel'. Layout attributes on a component tag do nothing unless the component declares and reads them; size the component from its root element, or wrap the tag in an rtgl-view that takes the size.",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/host: unsupported attr/prop 'sm-h' on 'rtgl-test-fix-hints-panel'. Layout attributes on a component tag do nothing unless the component declares and reads them; size the component from its root element, or wrap the tag in an rtgl-view that takes the size.",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/host: unsupported attr/prop 'sub-title' on 'rtgl-test-fix-hints-panel'. Declare 'subTitle' in propsSchema in that component's .schema.yaml, or remove it.",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-001",
+        "severity": "error",
+        "message": "components/host: unknown custom element 'rtgl-test-fix-hints-pane' in view template. It is neither a @rettangoli/ui element nor a component in the checked directories; did you mean 'rtgl-test-fix-hints-panel'?",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 4
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-001",
+        "severity": "error",
+        "message": "components/host: unknown custom element 'rtgl-buton' in view template. It is neither a @rettangoli/ui element nor a component in the checked directories; did you mean 'rtgl-button'?",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/host: unsupported attr/prop 'disabeld' on 'rtgl-button'; did you mean 'disabled'?",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 6
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-003",
+        "severity": "error",
+        "message": "components/host: unsupported attr/prop 'banana' on 'rtgl-button'.",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 6
+      },
+      {
+        "code": "RTGL-CHECK-YAHTML-001",
+        "severity": "error",
+        "message": "components/host: unknown custom element 'unknown-widget' in view template. It is neither a @rettangoli/ui element nor a component in the checked directories.",
+        "filePath": "src/components/host/host.view.yaml",
+        "line": 7
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-YAHTML-004"
+  ]
+}

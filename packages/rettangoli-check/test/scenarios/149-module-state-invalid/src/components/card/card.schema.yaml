@@ -1,0 +1,6 @@
+componentName: rtgl-test-module-state-invalid
+methods:
+  type: object
+  properties:
+    open:
+      type: object

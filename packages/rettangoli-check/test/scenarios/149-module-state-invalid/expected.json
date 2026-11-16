@@ -1,0 +1,123 @@
+{
+  "name": "module-scope mutable state in handlers, store and methods",
+  "options": {
+    "dirs": [
+      "./src/components"
+    ],
+    "includeYahtml": true
+  },
+  "expected": {
+    "ok": false,
+    "errorCount": 14,
+    "warnCount": 0,
+    "errorCodes": {
+      "RTGL-CHECK-MODULE-001": 14
+    },
+    "warnCodes": {},
+    "diagnostics": [
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'let clickCount' in .handlers.js is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 1
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'let exportedFlag' in .handlers.js is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 3
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'cache' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 4
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'items' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 5
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'registry' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 6
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'counters' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 7
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'flags' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 8
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'nested' is mutated in .handlers.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 9
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'var lastTarget' in .handlers.js is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'var pendingTimer' in .handlers.js is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.handlers.js",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'let nextId' in .store.js is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 1
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'seen' is mutated in .store.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.store.js",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'history' is mutated in .methods.js and is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.methods.js",
+        "line": 2
+      },
+      {
+        "code": "RTGL-CHECK-MODULE-001",
+        "severity": "error",
+        "message": "components/card: module-scope 'var openCount' in .methods.js is shared by every instance of the component. Keep per-instance values in the component's store state and change them through store actions; pass long-lived collaborators in through deps from the setup file.",
+        "filePath": "src/components/card/card.methods.js",
+        "line": 1
+      }
+    ]
+  },
+  "specRefs": [
+    "RTGL-SPEC-CONF-CORE-001",
+    "RTGL-SPEC-CONF-CORE-002",
+    "RTGL-SPEC-FE-013"
+  ]
+}

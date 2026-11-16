@@ -18,7 +18,7 @@
       {
         "code": "RTGL-CHECK-LISTENER-008",
         "severity": "error",
-        "message": "components/card: unknown listener option 'preventDefualt' for event 'tap' on ref 'root'.",
+        "message": "components/card: unknown listener option 'preventDefualt' for event 'tap' on ref 'root'. Supported options: handler, action, payload, preventDefault, stopPropagation, stopImmediatePropagation, targetOnly, once, debounce, throttle. The runtime ignores unknown keys, so remove it.",
         "filePath": "src/components/card/card.view.yaml",
         "line": 6
       }

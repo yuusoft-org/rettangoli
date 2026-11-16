@@ -1,0 +1,7 @@
+template:
+  - rtgl-view width=f:
+      - rtgl-test-fix-hints-panel title=Hello w=f sm-h=100 sub-title=World:
+      - rtgl-test-fix-hints-pane title=Hello:
+      - rtgl-buton: Save
+      - rtgl-button disabeld banana=ripe: Save
+      - unknown-widget:
