@@ -1,5 +1,5 @@
 ---
-title: Tabs - Sizes - Content Width - RTL
+title: Tabs - Sizes - Content Width - RTL - Hebrew Text
 dir: rtl
 description: Compares all three sizes with regular labels and a single-character label.
 viewport:
@@ -7,7 +7,7 @@ viewport:
   width: 900
   height: 650
 specs:
-  - 'Same content as `sizes.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `sizes.html`, with Hebrew text, rendered with `dir="rtl"` on the document.'
   - Small, medium, and large trays are 34px, 38px, and 44px high with the default theme.
   - The tray fits its contents inside a full-width parent.
   - Each tab fits its label, including a one-character label.
@@ -32,7 +32,7 @@ specs:
     </rtgl-view>
   </rtgl-view>
   <rtgl-view w="f" g="md">
-    <rtgl-text s="sm">Default size in a full-width parent</rtgl-text>
+    <rtgl-text s="sm">גודל ברירת מחדל בהורה ברוחב מלא</rtgl-text>
     <rtgl-tabs id="default-tabs" selected-tab="overview"></rtgl-tabs>
   </rtgl-view>
 </rtgl-view>
@@ -40,9 +40,9 @@ specs:
 <script>
   document.querySelectorAll('rtgl-tabs').forEach((tabs) => {
     tabs.items = [
-      { id: 'overview', label: tabs.id.startsWith('tiny') ? 'A' : 'Overview' },
-      { id: 'metrics', label: 'Metrics' },
-      { id: 'settings', label: 'Settings' },
+      { id: 'overview', label: tabs.id.startsWith('tiny') ? 'א' : 'סקירה' },
+      { id: 'metrics', label: 'מדדים' },
+      { id: 'settings', label: 'הגדרות' },
     ];
     tabs.addEventListener('item-click', (event) => {
       tabs.setAttribute('selected-tab', event.detail.id);

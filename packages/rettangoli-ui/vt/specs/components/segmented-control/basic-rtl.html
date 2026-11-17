@@ -1,9 +1,9 @@
 ---
-title: Segmented Control - Basic - RTL
+title: Segmented Control - Basic - RTL - Arabic Text
 dir: rtl
 description: Verifies a grouped single-choice control renders connected segments with an active selection.
 specs:
-  - 'Same content as `basic.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `basic.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
   - Three options render in one horizontal segmented row.
   - The selected option uses active background and foreground styling.
   - Shared outer and inner borders remain continuous.
@@ -16,9 +16,9 @@ specs:
   const control = document.getElementById('control');
   control.selectedValue = 'editor';
   control.options = [
-    { value: 'admin', label: 'Admin' },
-    { value: 'editor', label: 'Editor' },
-    { value: 'viewer', label: 'Viewer' },
+    { value: 'admin', label: 'مدير' },
+    { value: 'editor', label: 'محرر' },
+    { value: 'viewer', label: 'مشاهد' },
   ];
   control.render();
 </script>

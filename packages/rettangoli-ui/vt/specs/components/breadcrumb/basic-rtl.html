@@ -1,8 +1,8 @@
 ---
-title: "Breadcrumb - Basic - RTL"
+title: "Breadcrumb - Basic - RTL - Arabic Text"
 dir: rtl
 specs:
-  - 'Same content as `basic.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `basic.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
 ---
 <rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-breadcrumb id="breadcrumb">
@@ -12,9 +12,9 @@ specs:
 <script>
   const breadcrumb = document.getElementById('breadcrumb');
   breadcrumb.items = [
-    { label: "Actions", id: "breadcrumb-actions", path: "/actions" },
-    { label: "BGM", id: "breadcrumb-bgm", path: "/actions/bgm" },
-    { label: "Audio Selection", current: true }
+    { label: "الإجراءات", id: "breadcrumb-actions", path: "/actions" },
+    { label: "الموسيقى", id: "breadcrumb-bgm", path: "/actions/bgm" },
+    { label: "اختيار الصوت", current: true }
   ];
   breadcrumb.render();
 </script>

@@ -1,8 +1,8 @@
 ---
-title: Table - Basic - RTL
+title: Table - Basic - RTL - Arabic Text
 dir: rtl
 specs:
-  - 'Same content as `basic.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `basic.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
 ---
 <rtgl-view p="24">
   <rtgl-table id="users-table" w="100%"></rtgl-table>
@@ -12,28 +12,28 @@ specs:
   const table = document.getElementById('users-table');
   table.data = {
     columns: [
-      { key: 'id', label: 'ID' },
-      { key: 'name', label: 'Name' },
-      { key: 'email', label: 'Email' },
-      { key: 'role', label: 'Role' },
-      { key: 'status', label: 'Status' }
+      { key: 'id', label: 'الرقم' },
+      { key: 'name', label: 'الاسم' },
+      { key: 'email', label: 'البريد الإلكتروني' },
+      { key: 'role', label: 'الدور' },
+      { key: 'status', label: 'الحالة' }
     ],
     rows: [
-      { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Admin', status: 'Active' },
-      { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'User', status: 'Active' },
-      { id: 3, name: 'Bob Johnson', email: 'bob.johnson@example.com', role: 'User', status: 'Inactive' },
-      { id: 4, name: 'Alice Williams', email: 'alice.williams@example.com', role: 'Moderator', status: 'Active' },
-      { id: 5, name: 'Charlie Brown', email: 'charlie.brown@example.com', role: 'User', status: 'Active' },
-      { id: 6, name: 'Diana Prince', email: 'diana.prince@example.com', role: 'Admin', status: 'Active' },
-      { id: 7, name: 'Edward Norton', email: 'edward.norton@example.com', role: 'User', status: 'Pending' },
-      { id: 8, name: 'Fiona Green', email: 'fiona.green@example.com', role: 'Moderator', status: 'Active' },
-      { id: 9, name: 'George Miller', email: 'george.miller@example.com', role: 'User', status: 'Inactive' },
-      { id: 10, name: 'Helen Clark', email: 'helen.clark@example.com', role: 'Admin', status: 'Active' },
-      { id: 11, name: 'Ivan Petrov', email: 'ivan.petrov@example.com', role: 'User', status: 'Pending' },
-      { id: 12, name: 'Julia Roberts', email: 'julia.roberts@example.com', role: 'Moderator', status: 'Active' },
-      { id: 13, name: 'Kevin Hart', email: 'kevin.hart@example.com', role: 'User', status: 'Inactive' },
-      { id: 14, name: 'Laura Adams', email: 'laura.adams@example.com', role: 'Admin', status: 'Active' },
-      { id: 15, name: 'Michael Chen', email: 'michael.chen@example.com', role: 'User', status: 'Pending' }
+      { id: 1, name: 'أحمد علي', email: 'john.doe@example.com', role: 'مدير', status: 'نشط' },
+      { id: 2, name: 'فاطمة حسن', email: 'jane.smith@example.com', role: 'مستخدم', status: 'نشط' },
+      { id: 3, name: 'محمد إبراهيم', email: 'bob.johnson@example.com', role: 'مستخدم', status: 'غير نشط' },
+      { id: 4, name: 'عائشة يوسف', email: 'alice.williams@example.com', role: 'مشرف', status: 'نشط' },
+      { id: 5, name: 'عمر خالد', email: 'charlie.brown@example.com', role: 'مستخدم', status: 'نشط' },
+      { id: 6, name: 'ليلى منصور', email: 'diana.prince@example.com', role: 'مدير', status: 'نشط' },
+      { id: 7, name: 'يوسف سالم', email: 'edward.norton@example.com', role: 'مستخدم', status: 'قيد الانتظار' },
+      { id: 8, name: 'مريم ناصر', email: 'fiona.green@example.com', role: 'مشرف', status: 'نشط' },
+      { id: 9, name: 'خالد عمر', email: 'george.miller@example.com', role: 'مستخدم', status: 'غير نشط' },
+      { id: 10, name: 'نور حداد', email: 'helen.clark@example.com', role: 'مدير', status: 'نشط' },
+      { id: 11, name: 'إبراهيم صالح', email: 'ivan.petrov@example.com', role: 'مستخدم', status: 'قيد الانتظار' },
+      { id: 12, name: 'سارة كريم', email: 'julia.roberts@example.com', role: 'مشرف', status: 'نشط' },
+      { id: 13, name: 'حسن محمود', email: 'kevin.hart@example.com', role: 'مستخدم', status: 'غير نشط' },
+      { id: 14, name: 'هدى جمال', email: 'laura.adams@example.com', role: 'مدير', status: 'نشط' },
+      { id: 15, name: 'زياد فارس', email: 'michael.chen@example.com', role: 'مستخدم', status: 'قيد الانتظار' }
     ]
   };
   table.render();

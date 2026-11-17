@@ -1,5 +1,5 @@
 ---
-title: "Rules Validation - RTL"
+title: "Rules Validation - RTL - Arabic Text"
 dir: rtl
 description: Clicking validate with invalid non-empty values shows minLength, maxLength, and pattern rule errors.
 skipInitialScreenshot: true
@@ -16,7 +16,7 @@ viewport:
   width: 700
   height: 900
 specs:
-  - 'Same content as `rules-validation.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `rules-validation.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -28,46 +28,46 @@ specs:
 
   form.defaultValues = {
     username: 'ab',
-    summary: 'This summary is too long',
+    summary: 'هذا الملخص طويل جدا',
     slug: 'Invalid Slug',
   };
 
   form.form = {
-    title: 'Rules Validation',
-    description: 'Invalid values should show rule messages',
+    title: 'قواعد التحقق',
+    description: 'القيم غير الصالحة تعرض رسائل القواعد',
     fields: [{
       name: 'username',
       type: 'input-text',
-      label: 'Username',
+      label: 'اسم المستخدم',
       rules: [{
         rule: 'minLength',
         value: 4,
-        message: 'Username must be at least 4 characters',
+        message: 'يجب ألا يقل اسم المستخدم عن 4 أحرف',
       }],
     }, {
       name: 'summary',
       type: 'input-text',
-      label: 'Summary',
+      label: 'الملخص',
       rules: [{
         rule: 'maxLength',
         value: 10,
-        message: 'Summary must be at most 10 characters',
+        message: 'يجب ألا يزيد الملخص عن 10 أحرف',
       }],
     }, {
       name: 'slug',
       type: 'input-text',
-      label: 'Slug',
+      label: 'المعرّف',
       rules: [{
         rule: 'pattern',
         value: '^[a-z0-9-]+$',
-        message: 'Slug can only use lowercase letters, numbers, and hyphens',
+        message: 'يسمح المعرّف بالأحرف الإنجليزية الصغيرة والأرقام والشرطات فقط',
       }],
     }],
     actions: {
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        label: 'Validate',
+        label: 'تحقق',
         validate: true,
       }],
     }

@@ -1,13 +1,13 @@
 ---
-title: Input - Placeholder - Text Hint - RTL
+title: Input - Placeholder - Text Hint - RTL - Arabic Text
 dir: rtl
 description: Verifies placeholder text rendering for empty input values.
 specs:
-  - 'Same content as `input-placeholder-01.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `input-placeholder-01.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
   - Placeholder text is visible when value is empty.
   - Placeholder styling remains legible in default theme tokens.
   - Input geometry remains unchanged by placeholder content.
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
-  <rtgl-input placeholder="Please input something..." ></rtgl-input>
+  <rtgl-input placeholder="الرجاء إدخال نص..." ></rtgl-input>
 </rtgl-view>

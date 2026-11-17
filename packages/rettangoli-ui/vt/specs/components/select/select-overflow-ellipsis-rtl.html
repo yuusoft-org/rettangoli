@@ -1,8 +1,8 @@
 ---
-title: Select Overflow Ellipsis - RTL
+title: Select Overflow Ellipsis - RTL - Arabic Text
 dir: rtl
 specs:
-  - 'Same content as `select-overflow-ellipsis.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `select-overflow-ellipsis.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
 ---
 
 <style>
@@ -12,30 +12,30 @@ specs:
 </style>
 
 <rtgl-view g="lg" p="lg" wh="f" wrap>
-  <rtgl-text s="h3">Select with constrained width - should show ellipsis</rtgl-text>
+  <rtgl-text s="h3">قائمة اختيار بعرض محدود - يجب أن تظهر علامة الحذف</rtgl-text>
   <rtgl-view class="container" w="200" p="md" mb="lg">
-    <rtgl-text s="xs" c="red" mb="md">Container width: 200px (red border)</rtgl-text>
+    <rtgl-text s="xs" c="red" mb="md">عرض الحاوية: 200px (حد أحمر)</rtgl-text>
     <rtgl-select id="select-narrow" w="f"></rtgl-select>
   </rtgl-view>
 
-  <rtgl-text s="h3">Select with medium width</rtgl-text>
+  <rtgl-text s="h3">قائمة اختيار بعرض متوسط</rtgl-text>
   <rtgl-view class="container" w="300" p="md" mb="lg">
-    <rtgl-text s="xs" c="red" mb="md">Container width: 300px (red border)</rtgl-text>
+    <rtgl-text s="xs" c="red" mb="md">عرض الحاوية: 300px (حد أحمر)</rtgl-text>
     <rtgl-select id="select-medium" w="f"></rtgl-select>
   </rtgl-view>
 
-  <rtgl-text s="h3">Select with larger width</rtgl-text>
+  <rtgl-text s="h3">قائمة اختيار بعرض أكبر</rtgl-text>
   <rtgl-view class="container" w="500" p="md" mb="lg">
-    <rtgl-text s="xs" c="red" mb="md">Container width: 500px (red border)</rtgl-text>
+    <rtgl-text s="xs" c="red" mb="md">عرض الحاوية: 500px (حد أحمر)</rtgl-text>
     <rtgl-select id="select-large" w="f"></rtgl-select>
   </rtgl-view>
 </rtgl-view>
 
 <script>
   const longOptions = [
-    { value: "1", label: 'This is a very long option label that should trigger text overflow' },
-    { value: "2", label: 'Another extremely long option text that exceeds container width' },
-    { value: "3", label: 'Short option' },
+    { value: "1", label: 'هذه تسمية خيار طويلة جدا يجب أن تتجاوز المساحة المتاحة للنص' },
+    { value: "2", label: 'نص خيار آخر طويل للغاية يتجاوز عرض الحاوية' },
+    { value: "3", label: 'خيار قصير' },
   ]
 
   // Narrow select

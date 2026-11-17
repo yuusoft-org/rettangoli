@@ -1,9 +1,9 @@
 ---
-title: Button - Icons - Prefix and Suffix - RTL
+title: Button - Icons - Prefix and Suffix - RTL - Hebrew Text
 dir: rtl
 description: Verifies icon rendering with prefix, suffix, mixed positions, and size variants.
 specs:
-  - 'Same content as `button-icon-01.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `button-icon-01.html`, with Hebrew text, rendered with `dir="rtl"` on the document.'
   - Prefix and suffix icons render correctly with and without labels.
   - Icon sizing follows button size scale.
   - Mixed prefix and suffix combinations keep content alignment stable.
@@ -11,15 +11,15 @@ specs:
 
 <rtgl-view g="md" p="lg" wh="f">
     <rtgl-button pre="text" v="pr"></rtgl-button>
-    <rtgl-button pre="spinner" v="pr">Button</rtgl-button>
-    <rtgl-button pre="text" v="pr">Button</rtgl-button>
+    <rtgl-button pre="spinner" v="pr">כפתור</rtgl-button>
+    <rtgl-button pre="text" v="pr">כפתור</rtgl-button>
     <rtgl-button pre="text" v="se"></rtgl-button>
-    <rtgl-button pre="text" v="se">Button</rtgl-button>
-    <rtgl-button pre="text" s="sm">Left Icon</rtgl-button>
-    <rtgl-button pre="text">Left Icon</rtgl-button>
-    <rtgl-button pre="text" s="lg">Left Icon</rtgl-button>
-    <rtgl-button suf="text" s="sm">Right Icon</rtgl-button>
-    <rtgl-button suf="text">Right Icon</rtgl-button>
-    <rtgl-button suf="text" s="lg">Right Icon</rtgl-button>
-    <rtgl-button pre="text" suf="spinner">Both Icons</rtgl-button>
+    <rtgl-button pre="text" v="se">כפתור</rtgl-button>
+    <rtgl-button pre="text" s="sm">סמל בהתחלה</rtgl-button>
+    <rtgl-button pre="text">סמל בהתחלה</rtgl-button>
+    <rtgl-button pre="text" s="lg">סמל בהתחלה</rtgl-button>
+    <rtgl-button suf="text" s="sm">סמל בסוף</rtgl-button>
+    <rtgl-button suf="text">סמל בסוף</rtgl-button>
+    <rtgl-button suf="text" s="lg">סמל בסוף</rtgl-button>
+    <rtgl-button pre="text" suf="spinner">שני סמלים</rtgl-button>
 </rtgl-view>

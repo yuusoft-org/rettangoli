@@ -1,8 +1,8 @@
 ---
-title: "Sidebar with Icons - RTL"
+title: "Sidebar with Icons - RTL - Arabic Text"
 dir: rtl
 specs:
-  - 'Same content as `icon.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `icon.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
 ---
 <rtgl-view g="lg" h="100vh" w="f" wrap>
   <rtgl-sidebar id="sidebar"></rtgl-sidebar>
@@ -11,7 +11,7 @@ specs:
 <script>
   const sidebar = document.getElementById('sidebar');
   sidebar.header = {
-    label: "Navigation",
+    label: "التنقل",
     image: {
       src: "/public/sample1.jpg",
       width: 32,
@@ -22,36 +22,36 @@ specs:
   sidebar.items = [
     {
       id: "home",
-      title: "Home",
+      title: "الرئيسية",
       icon: "home"
     },
     {
       id: "music",
-      title: "Music Library",
+      title: "مكتبة الموسيقى",
       icon: "music"
     },
     {
       id: "playlists",
-      title: "Playlists",
+      title: "قوائم التشغيل",
       icon: "play"
     },
     {
       type: "groupLabel",
-      title: "Settings"
+      title: "الإعدادات"
     },
     {
       id: "preferences",
-      title: "Preferences",
+      title: "التفضيلات",
       icon: "text"
     },
     {
       id: "more",
-      title: "More Options",
+      title: "خيارات إضافية",
       icon: "threeDots"
     },
     {
       id: "about",
-      title: "About (no icon)"
+      title: "حول (بدون أيقونة)"
     }
   ]
   sidebar.render();
