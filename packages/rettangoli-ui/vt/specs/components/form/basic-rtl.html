@@ -1,8 +1,8 @@
 ---
-title: "Basic - RTL"
+title: "Basic - RTL - Arabic Text"
 dir: rtl
 specs:
-  - 'Same content as `basic.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `basic.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
 ---
 <rtgl-view id="container" g="lg" h="100vh" w="100vw" wrap>
 </rtgl-view>
@@ -15,33 +15,33 @@ specs:
   form.defaultValues = {}
 
   form.form = {
-    title: 'Form Title',
-    description: 'Form Description',
+    title: 'عنوان النموذج',
+    description: 'وصف النموذج',
     fields: [{
       name: 'email',
       type: 'input-text',
-      label: 'Email',
-      description: 'Enter your email',
+      label: 'البريد الإلكتروني',
+      description: 'أدخل بريدك الإلكتروني',
       required: true,
     }, {
       name: 'password',
       type: 'input-text',
-      label: 'Password',
+      label: 'كلمة المرور',
       inputType: 'password',
-      description: 'Enter your password',
+      description: 'أدخل كلمة المرور',
       required: true,
     }, {
       name: 'age',
       type: 'input-number',
-      label: 'Age',
-      description: 'Enter your age',
+      label: 'العمر',
+      description: 'أدخل عمرك',
       required: true,
     }, {
       name: 'comments',
       type: 'input-textarea',
-      label: 'Comments',
-      description: 'Any additional comments?',
-      placeholder: 'Enter your comments here...',
+      label: 'التعليقات',
+      description: 'هل لديك تعليقات إضافية؟',
+      placeholder: 'اكتب تعليقاتك هنا...',
       required: false,
       rows: 12,
     }],
@@ -49,7 +49,7 @@ specs:
       buttons: [{
         id: 'submit',
         variant: 'pr',
-        label: 'Submit',
+        label: 'إرسال',
       }],
     }
   }

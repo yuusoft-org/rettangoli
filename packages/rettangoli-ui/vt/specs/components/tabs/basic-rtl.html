@@ -1,9 +1,9 @@
 ---
-title: Tabs - Basic - Selected First - RTL
+title: Tabs - Basic - Selected First - RTL - Arabic Text
 dir: rtl
 description: Verifies baseline tabs rendering with the first tab selected by id.
 specs:
-  - 'Same content as `basic.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `basic.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
   - Selected tab applies active visual styling.
   - Unselected tabs retain muted visual styling.
   - Horizontal tab row spacing remains consistent.
@@ -16,9 +16,9 @@ specs:
 <script>
   const tabs = document.getElementById('tabs');
   tabs.items = [
-    { label: "Tab 1", id: "tab1" },
-    { label: "Tab 2", id: "tab2" },
-    { label: "Tab 3", id: "tab3" }
+    { label: "التبويب 1", id: "tab1" },
+    { label: "التبويب 2", id: "tab2" },
+    { label: "التبويب 3", id: "tab3" }
   ];
   tabs.addEventListener('item-click', (event) => {
     tabs.setAttribute('selected-tab', event.detail.id);

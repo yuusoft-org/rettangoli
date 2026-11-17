@@ -1,8 +1,8 @@
 ---
-title: "Icons And Shortcuts - RTL"
+title: "Icons And Shortcuts - RTL - Arabic Text"
 dir: rtl
 specs:
-  - 'Same content as `icons-shortcuts.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `icons-shortcuts.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
 ---
 <rtgl-view g="lg" h="100vh" w="100vw" wrap>
   <rtgl-dropdown-menu id="dropdown-menu"></rtgl-dropdown-menu>
@@ -14,24 +14,24 @@ specs:
   dropdownMenu.setAttribute('w', '320');
   dropdownMenu.items = [
     {
-      label: 'File',
+      label: 'ملف',
       type: 'section',
     },
     {
       id: 'new-file',
-      label: 'New File',
+      label: 'ملف جديد',
       icon: 'plus',
       shortcut: 'Cmd+N',
     },
     {
       id: 'open-file',
-      label: 'Open File',
+      label: 'فتح ملف',
       icon: 'text',
       shortcut: 'Cmd+O',
     },
     {
       id: 'quick-export',
-      label: 'Quick Export',
+      label: 'تصدير سريع',
       icon: '',
       suffixText: 'Shift+Cmd+E',
     },
@@ -39,18 +39,18 @@ specs:
       type: 'separator',
     },
     {
-      label: 'Playback',
+      label: 'التشغيل',
       type: 'section',
     },
     {
       id: 'play-preview',
-      label: 'Play Preview',
+      label: 'تشغيل المعاينة',
       icon: 'play',
       suffixText: 'Space',
     },
     {
       id: 'delete-asset',
-      label: 'Delete Asset',
+      label: 'حذف الملف',
       icon: 'x',
       shortcut: 'Del',
       disabled: true,

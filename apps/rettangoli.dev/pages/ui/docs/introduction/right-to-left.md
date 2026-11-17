@@ -25,6 +25,35 @@ document.documentElement.setAttribute("dir", "rtl");
 
 Left to right is the default, so a page without `dir` needs no change.
 
+## Example
+
+An Arabic settings panel. Apart from `dir="rtl"` on the outer view, which you would normally set on `<html>`, the markup has no right-to-left attributes of its own: the same markup with English text is a left-to-right panel.
+
+```html
+<rtgl-view dir="rtl" lang="ar" d="v" g="lg" w="f" p="lg" bw="xs" bc="bo" br="md">
+  <rtgl-view d="h" g="md" av="c" w="f">
+    <rtgl-svg svg="text" wh="16"></rtgl-svg>
+    <rtgl-text s="lg">إعدادات الحساب</rtgl-text>
+  </rtgl-view>
+  <rtgl-view g="sm" w="f">
+    <rtgl-text s="sm" c="mu">الاسم الكامل</rtgl-text>
+    <rtgl-input w="f" placeholder="اكتب اسمك هنا..."></rtgl-input>
+  </rtgl-view>
+  <rtgl-view d="h" g="sm" wrap>
+    <rtgl-tag v="pr">نشط</rtgl-tag>
+    <rtgl-tag pre="text">مسودة</rtgl-tag>
+    <rtgl-tag removable value="archived">مؤرشف</rtgl-tag>
+  </rtgl-view>
+  <rtgl-checkbox checked>أرسل لي إشعارات عبر البريد الإلكتروني</rtgl-checkbox>
+  <rtgl-view d="h" g="sm" w="f" ah="e">
+    <rtgl-button v="gh">إلغاء</rtgl-button>
+    <rtgl-button v="pr" pre="text">حفظ التغييرات</rtgl-button>
+  </rtgl-view>
+</rtgl-view>
+```
+
+Use real text in the page's language when you check a right-to-left layout. English text inside a right-to-left page is reordered around its punctuation, so `Save changes.` shows as `.Save changes` and looks like a bug that your users will never see.
+
 ## What `l` and `r` Mean
 
 In Rettangoli attributes, **`l` and `r` mean the start and end of the reading direction**. Under left to right that is left and right. Under right to left they are mirrored. `t` and `b` never change.
@@ -43,12 +72,18 @@ In Rettangoli attributes, **`l` and `r` mean the start and end of the reading di
 | `ah="s"`, `ta="s"` | left | right |
 | `ah="e"`, `ta="e"` | right | left |
 
-So a view written once works in both directions:
+So a view written once works in both directions. The two rows below use the same attributes; only `dir` and the text differ:
 
 ```html
-<rtgl-view d="h" g="md" pl="lg">
-  <rtgl-svg svg="menu" wh="16"></rtgl-svg>
-  <rtgl-text>Settings</rtgl-text>
+<rtgl-view d="v" g="md" w="f">
+  <rtgl-view dir="ltr" d="h" g="md" pl="lg" pv="md" av="c" w="f" bw="xs" bc="bo">
+    <rtgl-svg svg="text" wh="16"></rtgl-svg>
+    <rtgl-text>Settings</rtgl-text>
+  </rtgl-view>
+  <rtgl-view dir="rtl" lang="ar" d="h" g="md" pl="lg" pv="md" av="c" w="f" bw="xs" bc="bo">
+    <rtgl-svg svg="text" wh="16"></rtgl-svg>
+    <rtgl-text>الإعدادات</rtgl-text>
+  </rtgl-view>
 </rtgl-view>
 ```
 
@@ -74,6 +109,14 @@ The attributes map to CSS logical properties: `ml` is `margin-inline-start`, `pr
 ## Text the User Types
 
 `rtgl-input` and `rtgl-textarea` take their direction from their content. Hebrew typed into a field on an English page reads right to left, and English typed into a field on an Arabic page reads left to right. An empty field follows the page, so its placeholder is aligned with the rest of the form.
+
+```html
+<rtgl-view g="md" w="320">
+  <rtgl-input w="f" value="שלום עולם"></rtgl-input>
+  <rtgl-input w="f" value="مرحبا بالعالم"></rtgl-input>
+  <rtgl-input w="f" value="Hello world"></rtgl-input>
+</rtgl-view>
+```
 
 ## Keeping a Subtree Physical
 

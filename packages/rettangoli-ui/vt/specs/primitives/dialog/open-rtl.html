@@ -1,9 +1,9 @@
 ---
-title: Dialog - Open - Default Visible - RTL
+title: Dialog - Open - Default Visible - RTL - Arabic Text
 dir: rtl
 description: Verifies dialog rendering when initialized in an open state.
 specs:
-  - 'Same content as `open.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `open.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
   - Dialog starts visible with `open` attribute applied.
   - Content layout remains stable without interaction.
   - Close event listener clears dialog open state.
@@ -18,11 +18,11 @@ steps:
   - action: screenshot
 ---
 <rtgl-view g="lg" p="lg" wh="f" wrap>
-  <rtgl-button id="button">Open Dialog</rtgl-button>
+  <rtgl-button id="button">فتح النافذة</rtgl-button>
   <rtgl-dialog id="dialog" open>
     <rtgl-view slot="content" g="md">
-      <rtgl-text s="lg">Dialog Content</rtgl-text>
-      <rtgl-text c="mu">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos.</rtgl-text>
+      <rtgl-text s="lg">محتوى النافذة</rtgl-text>
+      <rtgl-text c="mu">هذا نص تجريبي يوضح شكل المحتوى داخل نافذة الحوار عند عرضها.</rtgl-text>
     </rtgl-view>
   </rtgl-dialog>
 </rtgl-view>

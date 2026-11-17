@@ -1,9 +1,9 @@
 ---
-title: Checkbox - States - RTL
+title: Checkbox - States - RTL - Arabic Text
 dir: rtl
 description: Verifies the checkbox off, on, indeterminate, and disabled states, with and without labels.
 specs:
-  - 'Same content as `checkbox-states-01.html`, rendered with `dir="rtl"` on the document.'
+  - 'Same layout as `checkbox-states-01.html`, with Arabic text, rendered with `dir="rtl"` on the document.'
   - An unchecked box shows a muted-foreground border on the background color.
   - Checked and indeterminate boxes fill with the primary color and draw a centered tick or dash.
   - Disabled boxes and their labels are dimmed.
@@ -19,12 +19,12 @@ specs:
     <rtgl-checkbox disabled indeterminate aria-label="Disabled and mixed"></rtgl-checkbox>
   </rtgl-view>
   <rtgl-view g="md">
-    <rtgl-checkbox label="Label from the attribute"></rtgl-checkbox>
-    <rtgl-checkbox checked>Label from the slot</rtgl-checkbox>
-    <rtgl-checkbox indeterminate>Some layers selected</rtgl-checkbox>
-    <rtgl-checkbox disabled checked>Disabled with a label</rtgl-checkbox>
+    <rtgl-checkbox label="تسمية من السمة"></rtgl-checkbox>
+    <rtgl-checkbox checked>تسمية من المحتوى</rtgl-checkbox>
+    <rtgl-checkbox indeterminate>بعض الطبقات محددة</rtgl-checkbox>
+    <rtgl-checkbox disabled checked>معطل مع تسمية</rtgl-checkbox>
   </rtgl-view>
   <rtgl-view w="220">
-    <rtgl-checkbox>I agree to the terms and conditions and the privacy policy of this service</rtgl-checkbox>
+    <rtgl-checkbox>أوافق على الشروط والأحكام وسياسة الخصوصية الخاصة بهذه الخدمة</rtgl-checkbox>
   </rtgl-view>
 </rtgl-view>
